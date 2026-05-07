@@ -9,17 +9,33 @@ import type { Complaint } from '../types/complaint';
 const API_URL = import.meta.env.VITE_APP_API_URL || 'http://localhost:8000';
 const PER_PAGE = 6;
 
+const CATEGORIAS = [
+  "Cobrança Indevida", 
+  "Problemas de Pagamento", 
+  "Conta Bloqueada", 
+  "Resgate de Investimento Não Realizado", 
+  "Problemas de Atendimento",
+  "Vítima de golpe",
+  "Outros"
+];
+
 export default function Dashboard() {
   const navegar = useNavigate();
   const [lista, setLista] = useState<Complaint[]>([]);
   const [totalPages, setTotalPages] = useState(1);
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
+  
+  // 1. Novo estado para a categoria
+  const [categoria, setCategoria] = useState('');
 
-  const fetchComplaints = async (p: number) => {
+  // 2. Atualização da função de busca para incluir a categoria
+  const fetchComplaints = async (p: number, cat: string) => {
     setLoading(true);
     try {
-      const res = await fetch(`${API_URL}/latest?n=${PER_PAGE}&page=${p}`);
+      // Adicionamos o parâmetro category na URL (ajuste conforme o nome esperado pelo seu backend)
+      const url = `${API_URL}/latest?n=${PER_PAGE}&page=${p}${cat ? `&category=${encodeURIComponent(cat)}` : ''}`;
+      const res = await fetch(url);
       const data = await res.json();
       setLista(data.items);
       setTotalPages(data.pages);
@@ -30,9 +46,10 @@ export default function Dashboard() {
     }
   };
 
+  // 3. O useEffect agora escuta mudanças na página E na categoria
   useEffect(() => {
-    fetchComplaints(page);
-  }, [page]);
+    fetchComplaints(page, categoria);
+  }, [page, categoria]);
 
   const carregarbotao = (id: string) => navegar(`/complaint/${id}`);
 
@@ -74,8 +91,20 @@ export default function Dashboard() {
             <div className="reclamation-header">
               <h3>Reclamações</h3>
               <div className="search-filter-container">
-                <input type="text" placeholder="Pesquisar..." className="search-bar" />
-                <button className="filter-btn">Filtrar</button>
+                {/* 4. Substituição do Input/Botão pela tag Select */}
+                <select 
+                  className="filter-btn" 
+                  value={categoria} 
+                  onChange={(e) => {
+                    setCategoria(e.target.value);
+                    setPage(1); // Reseta para a primeira página ao filtrar
+                  }}
+                >
+                  <option value="">Todas as Categorias</option>
+                  {CATEGORIAS.map((cat) => (
+                    <option key={cat} value={cat}>{cat}</option>
+                  ))}
+                </select>
               </div>
             </div>
 
@@ -83,11 +112,13 @@ export default function Dashboard() {
               {loading ? (
                 <div className="status-box">Carregando...</div>
               ) : lista.length === 0 ? (
-                <div className="status-box">Nenhuma reclamação encontrada.</div>
+                <div className="status-box">Nenhuma reclamação encontrada nesta categoria.</div>
               ) : (
                 lista.map((reclamacao) => (
                   <div key={reclamacao.id} className="complaint-card">
                     <h4>{reclamacao.complaint_title}</h4>
+                    {/* Exibindo a categoria no card para conferência */}
+                    <span className="badge">{reclamacao.category}</span>
                     <p className="complaint-description">{reclamacao.complaint_description}</p>
                     <button className="read-more-btn" onClick={() => carregarbotao(reclamacao.id)}>
                       Ler mais e obter recomendações
