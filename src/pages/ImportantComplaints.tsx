@@ -1,55 +1,90 @@
-import '../styles/graphics.css';
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { BarChart3, LayoutDashboard } from 'lucide-react'; 
 import ImportantComplaint from '../components/ImportantComplaint';
+import '../styles/dashboard.css'; 
 
-const complaints_list = [
-  {
-    "id": "1",
-    "pk": "string",
-    "complaint_title":"Cobrança Indevida",
-    "complaint_description":"Fui cobrado(a) em meu extrato por uma \"Tarifa de Manutenção de Conta Premium\" no valor de R$ 45,00. Nunca solicitei ou autorizei a migração para um pacote de serviços Premium, meu contrato prevê apenas o pacote de serviços essenciais, sem custos. Solicito o estorno imediato do valor e o cancelamento desta cobrança recorrente.",
-    "complaint_creation_date":"18/10/2025 às 20:31",
-    "complaint_solution":"1. **Estorno e Correção Imediata:** Realizar o estorno imediato de R$ 45,00 para a conta do cliente, com a devida justificativa no extrato (Ex: \"Estorno Tarifa Indevida\").\n2. **Bloqueio da Cobrança:** Revisar o cadastro do cliente e a configuração do pacote de serviços, garantindo que a Tarifa Premium seja cancelada permanentemente, mantendo-o no pacote Essencial.\n3. **Análise de Causa_Raiz:** Auditar o processo de migração de pacotes para identificar a falha que gerou a cobrança (erro de sistema, erro humano ou contratação não solicitada) e aplicar correção sistêmica para evitar reincidência.",
-    "complaint_num":"1",
-    "complaint_importance": 5
-  },
-  {
-    "id": "2",
-    "pk": "stri2",
-    "complaint_title":"Problemas de Pagamento",
-    "complaint_description":"Realizei o pagamento de um boleto no valor de R$ 850,00 no dia 15/10/2025, às 14:30h, através do aplicativo do banco. O comprovante foi gerado, mas o beneficiário informou que o pagamento não foi compensado. O débito ocorreu em minha conta, mas o banco alega falha sistêmica e o boleto está em atraso. Exijo a confirmação urgente do repasse ou o estorno imediato para que eu possa pagar novamente sem multas.",
-    "complaint_creation_date":"18/10/2025 às 09:54",
-    "complaint_solution":"1. **Resolução Prioritária:** Abrir uma investigação urgente na área de TI/Compensação.\n2. **Comunicação e Estorno/Repasse:** Em até 4 horas úteis, confirmar o status:\na) Se o repasse puder ser forçado (compensação imediata), fazê-lo e enviar o comprovante ao cliente.\nb) Caso contrário, realizar o estorno imediato de R$ 850,00 para a conta do cliente.\n3. **Mitigação de Danos:** Emitir uma declaração oficial (carta ou e-mail com timbre do banco) ao cliente, assumindo a falha sistêmica e se responsabilizando por quaisquer multas e juros de atraso que o cliente venha a ter com o beneficiário do boleto.",
-    "complaint_num": "2",
-    "complaint_importance": 5
-  }
-]
-
+const API_URL = import.meta.env.VITE_APP_API_URL || 'http://localhost:8000';
 
 export default function ImportantComplaints() {
+  const navegar = useNavigate();
+  
+  // Estados para dados e controle de carregamento
+  const [lista, setLista] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  // Função para buscar dados da API filtrando apenas por importância 5
+  const fetchUrgentes = async () => {
+    setLoading(true);
+    try {
+      // Ajuste o endpoint conforme a necessidade do seu backend
+      const url = `${API_URL}/latest?importance=5`;
+      const res = await fetch(url);
+      const data = await res.json();
+      
+      // Assume que a API retorna um objeto com uma lista 'items'
+      setLista(data.items || []);
+    } catch (err) {
+      console.error("Erro ao buscar reclamações urgentes:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Carrega os dados ao montar o componente
+  useEffect(() => {
+    fetchUrgentes();
+  }, []);
+
   return (
-    <div className="layout2">
-      <header className="cab">
-        <h2>Reclamações urgentes</h2>
-      </header>
+    <div className="layout">
+      {/* Sidebar - Herdando o estilo escuro do dashboard.css */}
+      <aside className="sidebar">
+        <div className="sidebar-header">
+          <span className="logo-text">Painel Geral</span>
+        </div>
 
-      <main className="main2">
+        <nav className="sidebar-nav">
+          <div className="nav-group">
+            <label>Navegação</label>
+            <button className="nav-item" onClick={() => navegar('/')}>
+              <LayoutDashboard size={18} />
+              <span>Voltar ao Dashboard</span>
+            </button>
+            <button className="nav-item" onClick={() => navegar('/graphics')}>
+              <BarChart3 size={18} />
+              <span>Gráficos Analíticos</span>
+            </button>
+          </div>
+        </nav>
+      </aside>
 
-	<div className="complaints-container">
-		{complaints_list.length === 0 ? (<div className="complaint-card"><p>Nenhuma reclamação encontrada.</p></div>)
-		: (complaints_list.map(function(item){
-			return(
-			<ImportantComplaint
-			complaint_importance = {item.complaint_importance}
-			complaint_title = {item.complaint_title}
-			id = {item.id}
-			complaint_description = {item.complaint_description}/>
-		);
-		}))  }
-	
-	</div>
-        
-      </main>
+      <div className="main-container">
+        <header className="main-header">
+          <h2>Reclamações Urgentes</h2>
+        </header>
 
+        <main className="content-area">
+          <div className="complaints-container">
+            {loading ? (
+              <div className="status-box">Carregando prioridades...</div>
+            ) : lista.length === 0 ? (
+              <div className="status-box">Nenhuma reclamação urgente encontrada.</div>
+            ) : (
+              lista.map((item) => (
+                <ImportantComplaint
+                  key={item.id}
+                  id={item.id}
+                  // Garante compatibilidade com diferentes nomes de campos vindos da API
+                  complaint_importance={item.importance || item.complaint_importance}
+                  complaint_title={item.complaint_title}
+                  complaint_description={item.complaint_description}
+                />
+              ))
+            )}
+          </div>
+        </main>
+      </div>
     </div>
   );
 }
