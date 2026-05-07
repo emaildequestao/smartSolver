@@ -1,10 +1,10 @@
-import '../styles/dashboard.css';
-import { useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-import { BarChart3, AlertCircle } from 'lucide-react'; 
+import { useNavigate } from 'react-router-dom';
+import { BarChart3, AlertCircle, Search } from 'lucide-react'; 
 import LoadButton from '../components/LoadButton';
 import LoadDataButton from '../components/LoadDataButton';
 import type { Complaint } from '../types/complaint';
+import '../styles/dashboard.css';
 
 const API_URL = import.meta.env.VITE_APP_API_URL || 'http://localhost:8000';
 const PER_PAGE = 6;
@@ -19,39 +19,54 @@ const CATEGORIAS = [
   "Outros"
 ];
 
+const IMPORTANCIAS = [1, 2, 3, 4, 5];
+
 export default function Dashboard() {
   const navegar = useNavigate();
+  
+  // Estados de Dados
   const [lista, setLista] = useState<Complaint[]>([]);
   const [totalPages, setTotalPages] = useState(1);
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
   
-  // 1. Novo estado para a categoria
+  // Estados de Filtro
   const [categoria, setCategoria] = useState('');
+  const [importancia, setImportancia] = useState('');
+  const [busca, setBusca] = useState('');
 
-  // 2. Atualização da função de busca para incluir a categoria
-  const fetchComplaints = async (p: number, cat: string) => {
+  // Função de busca principal
+  const fetchComplaints = async () => {
     setLoading(true);
     try {
-      // Adicionamos o parâmetro category na URL (ajuste conforme o nome esperado pelo seu backend)
-      const url = `${API_URL}/latest?n=${PER_PAGE}&page=${p}${cat ? `&category=${encodeURIComponent(cat)}` : ''}`;
-      const res = await fetch(url);
+      // Construção da URL com Query Params
+      const params = new URLSearchParams({
+        n: PER_PAGE.toString(),
+        page: page.toString(),
+      });
+
+      if (categoria) params.append('category', categoria);
+      if (importancia) params.append('importance', importancia);
+      if (busca) params.append('q', busca); // 'q' é o padrão para busca textual
+
+      const res = await fetch(`${API_URL}/latest?${params.toString()}`);
       const data = await res.json();
-      setLista(data.items);
-      setTotalPages(data.pages);
+      
+      setLista(data.items || []);
+      setTotalPages(data.pages || 1);
     } catch (err) {
-      console.error(err);
+      console.error("Erro ao buscar reclamações:", err);
     } finally {
       setLoading(false);
     }
   };
 
-  // 3. O useEffect agora escuta mudanças na página E na categoria
+  // Efeito que dispara a busca sempre que um filtro ou a página muda
   useEffect(() => {
-    fetchComplaints(page, categoria);
-  }, [page, categoria]);
+    fetchComplaints();
+  }, [page, categoria, importancia, busca]);
 
-  const carregarbotao = (id: string) => navegar(`/complaint/${id}`);
+  const carregarDetalhes = (id: string) => navegar(`/complaint/${id}`);
 
   return (
     <div className="layout">
@@ -83,55 +98,101 @@ export default function Dashboard() {
 
       <div className="main-container">
         <header className="main-header">
-          <h2>Dashboard</h2>
+          <h2>Dashboard de Reclamações</h2>
         </header>
 
         <main className="content-area">
           <section className="complaint-section">
-            <div className="reclamation-header">
-              <h3>Reclamações</h3>
-              <div className="search-filter-container">
-                {/* 4. Substituição do Input/Botão pela tag Select */}
+            
+            {/* BARRA DE FILTROS COMPLETA */}
+            <div className="reclamation-header" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: '15px' }}>
+              <h3>Filtros de Pesquisa</h3>
+              
+              <div className="search-filter-container" style={{ display: 'flex', width: '100%', gap: '10px', flexWrap: 'wrap' }}>
+                
+                {/* Busca por Texto */}
+                <div style={{ position: 'relative', flex: '2', minWidth: '250px' }}>
+                  <Search size={18} style={{ position: 'absolute', left: '10px', top: '12px', color: '#666' }} />
+                  <input 
+                    type="text"
+                    placeholder="Buscar no título ou descrição..."
+                    className="filter-btn"
+                    style={{ paddingLeft: '35px', width: '100%' }}
+                    value={busca}
+                    onChange={(e) => { setBusca(e.target.value); setPage(1); }}
+                  />
+                </div>
+
+                {/* Filtro de Categoria */}
                 <select 
                   className="filter-btn" 
+                  style={{ flex: '1' }}
                   value={categoria} 
-                  onChange={(e) => {
-                    setCategoria(e.target.value);
-                    setPage(1); // Reseta para a primeira página ao filtrar
-                  }}
+                  onChange={(e) => { setCategoria(e.target.value); setPage(1); }}
                 >
                   <option value="">Todas as Categorias</option>
                   {CATEGORIAS.map((cat) => (
                     <option key={cat} value={cat}>{cat}</option>
                   ))}
                 </select>
+
+                {/* Filtro de Importância */}
+                <select 
+                  className="filter-btn" 
+                  style={{ flex: '1' }}
+                  value={importancia} 
+                  onChange={(e) => { setImportancia(e.target.value); setPage(1); }}
+                >
+                  <option value="">Importância (Todas)</option>
+                  {IMPORTANCIAS.map((num) => (
+                    <option key={num} value={num.toString()}>Nível {num}</option>
+                  ))}
+                </select>
               </div>
             </div>
 
+            {/* LISTAGEM DE CARDS */}
             <div className="complaints-container">
               {loading ? (
-                <div className="status-box">Carregando...</div>
+                <div className="status-box">Carregando dados...</div>
               ) : lista.length === 0 ? (
-                <div className="status-box">Nenhuma reclamação encontrada nesta categoria.</div>
+                <div className="status-box">Nenhuma reclamação encontrada para os filtros selecionados.</div>
               ) : (
-                lista.map((reclamacao) => (
-                  <div key={reclamacao.id} className="complaint-card">
-                    <h4>{reclamacao.complaint_title}</h4>
-                    {/* Exibindo a categoria no card para conferência */}
-                    <span className="badge">{reclamacao.category}</span>
-                    <p className="complaint-description">{reclamacao.complaint_description}</p>
-                    <button className="read-more-btn" onClick={() => carregarbotao(reclamacao.id)}>
-                      Ler mais e obter recomendações
+                lista.map((item) => (
+                  <div key={item.id} className="complaint-card">
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
+                      <span className="badge">{item.category}</span>
+                      <span className={`importance-tag level-${item.importance}`} style={{ fontWeight: 'bold' }}>
+                        Nível {item.importance}
+                      </span>
+                    </div>
+                    <h4>{item.complaint_title}</h4>
+                    <p className="complaint-description">
+                      {item.complaint_description.substring(0, 150)}...
+                    </p>
+                    <button className="read-more-btn" onClick={() => carregarDetalhes(item.id)}>
+                      Analisar Reclamação
                     </button>
                   </div>
                 ))
               )}
             </div>
 
+            {/* PAGINAÇÃO */}
             <div className="pagination">
-              <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1}>&lt;</button>
-              <span className="page-info">Página {page} de {totalPages}</span>
-              <button onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page === totalPages}>&gt;</button>
+              <button 
+                onClick={() => setPage((p) => Math.max(1, p - 1))} 
+                disabled={page === 1 || loading}
+              >
+                Anterior
+              </button>
+              <span className="page-info">Página <strong>{page}</strong> de {totalPages}</span>
+              <button 
+                onClick={() => setPage((p) => Math.min(totalPages, p + 1))} 
+                disabled={page === totalPages || loading}
+              >
+                Próxima
+              </button>
             </div>
           </section>
         </main>
