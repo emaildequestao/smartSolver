@@ -45,8 +45,8 @@ export default function Dashboard() {
         page: page.toString(),
       });
 
-      if (categoria) params.append('category', categoria);
-      if (importancia) params.append('importance', importancia);
+      if (categoria) params.append('complaintcategory', categoria);
+      if (importancia) params.append('complaintimportance', importancia);
       if (busca) params.append('q', busca); // 'q' é o padrão para busca textual
 
       const res = await fetch(`${API_URL}/latest?${params.toString()}`);
