@@ -163,7 +163,7 @@ export default function Dashboard() {
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
                       <span className="badge">{item.complaint_category}</span>
                       <span className={`importance-tag level-${item.complaint_importance}`} style={{ fontWeight: 'bold' }}>
-                        Nível {item.importance}
+                        Nível {item.complaint_importance}
                       </span>
                     </div>
                     <h4>{item.complaint_title}</h4>
