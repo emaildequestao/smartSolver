@@ -161,8 +161,8 @@ export default function Dashboard() {
                 lista.map((item) => (
                   <div key={item.id} className="complaint-card">
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
-                      <span className="badge">{item.category}</span>
-                      <span className={`importance-tag level-${item.importance}`} style={{ fontWeight: 'bold' }}>
+                      <span className="badge">{item.complaintcategory}</span>
+                      <span className={`importance-tag level-${item.complaintimportance}`} style={{ fontWeight: 'bold' }}>
                         Nível {item.importance}
                       </span>
                     </div>
