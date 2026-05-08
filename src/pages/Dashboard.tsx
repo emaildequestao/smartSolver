@@ -45,8 +45,8 @@ export default function Dashboard() {
         page: page.toString(),
       });
 
-      if (categoria) params.append('complaintcategory', categoria);
-      if (importancia) params.append('complaintimportance', importancia);
+      if (categoria) params.append('complaint_category', categoria);
+      if (importancia) params.append('complaint_importance', importancia);
       if (busca) params.append('q', busca); // 'q' é o padrão para busca textual
 
       const res = await fetch(`${API_URL}/latest?${params.toString()}`);
@@ -161,8 +161,8 @@ export default function Dashboard() {
                 lista.map((item) => (
                   <div key={item.id} className="complaint-card">
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
-                      <span className="badge">{item.complaintcategory}</span>
-                      <span className={`importance-tag level-${item.complaintimportance}`} style={{ fontWeight: 'bold' }}>
+                      <span className="badge">{item.complaint_category}</span>
+                      <span className={`importance-tag level-${item.complaint_importance}`} style={{ fontWeight: 'bold' }}>
                         Nível {item.importance}
                       </span>
                     </div>
