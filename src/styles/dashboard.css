@@ -1,3 +1,4 @@
+/* --- VARIÁVEIS TEMA (ESTILO ORIGINAL) --- */
 :root {
   --bg-deep: #0f172a;        
   --bg-card: #1e293b;        
@@ -11,13 +12,17 @@
   --ease: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
+/* --- RESET BÁSICO --- */
 * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+body { background: var(--bg-deep); color: var(--text-main); line-height: 1.5; }
 
-body { background: var(--bg-deep); color: var(--text-main); }
+/* --- ESTRUTURA DE LAYOUT (DASHBOARD & RECLAMAÇÕES) --- */
+.layout { 
+  display: flex; 
+  min-height: 100vh; 
+  background: var(--bg-deep); 
+}
 
-.layout { display: flex; min-height: 100vh; background: var(--bg-deep); }
-
-/* --- SIDEBAR ORIGINAL --- */
 .sidebar {
   width: 260px;
   background: #0a0f1d;
@@ -25,8 +30,17 @@ body { background: var(--bg-deep); color: var(--text-main); }
   border-right: 1px solid var(--border-ui);
   display: flex;
   flex-direction: column;
+  flex-shrink: 0; /* Impede que a sidebar amasse */
 }
 
+.main-container { 
+  flex: 1; 
+  padding: 60px; 
+  background: var(--bg-deep); 
+  overflow-y: auto;
+}
+
+/* --- COMPONENTES DA SIDEBAR --- */
 .sidebar-header { margin-bottom: 50px; }
 .logo-text { 
   font-size: 1.6rem; 
@@ -35,7 +49,14 @@ body { background: var(--bg-deep); color: var(--text-main); }
   letter-spacing: -1px;
 }
 
-.nav-group label { color: var(--text-dim); font-size: 0.7rem; text-transform: uppercase; letter-spacing: 2px; display: block; margin-bottom: 15px; }
+.nav-group label { 
+  color: var(--text-dim); 
+  font-size: 0.7rem; 
+  text-transform: uppercase; 
+  letter-spacing: 2px; 
+  display: block; 
+  margin-bottom: 15px; 
+}
 
 .nav-item, .nav-group button {
   width: 100%; border: none; background: transparent; padding: 14px;
@@ -45,27 +66,25 @@ body { background: var(--bg-deep); color: var(--text-main); }
 }
 
 .nav-item:hover, .nav-group button:hover {
-  background: var(--accent); color: white; transform: translateX(8px);
+  background: var(--accent); 
+  color: white; 
+  transform: translateX(8px);
 }
 
-/* --- MAIN CONTAINER ORIGINAL --- */
-.main-container { 
-  flex: 1; 
-  padding: 60px; 
-  background: var(--bg-deep); 
-  overflow-y: auto;
-}
-
-.main-header { 
-  margin-bottom: 45px;
-}
-
-.main-header h1 {
+.nav-item.warning:hover {
+  background: var(--danger);
   color: white;
-  font-size: 2.2rem;
 }
 
-/* --- FILTROS DASHBOARD --- */
+/* --- CABEÇALHOS (GARANTE COR BRANCA) --- */
+.main-header { margin-bottom: 45px; }
+.main-header h1 { 
+  color: white !important; 
+  font-size: 2.2rem; 
+  font-weight: 800;
+}
+
+/* --- FILTROS E BANNERS --- */
 .filter-card {
   background: var(--bg-card);
   padding: 25px;
@@ -99,7 +118,7 @@ body { background: var(--bg-deep); color: var(--text-main); }
   outline: none;
 }
 
-/* --- GRID DE RECLAMAÇÕES --- */
+/* --- GRID DE CARDS (REUTILIZÁVEL) --- */
 .complaints-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
@@ -152,11 +171,17 @@ body { background: var(--bg-deep); color: var(--text-main); }
   padding: 10px 20px;
   border-radius: 12px;
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   transition: var(--ease);
 }
 
-.pag-btn:disabled { opacity: 0.4; cursor: not-allowed; }
-.pag-btn:not(:disabled):hover { background: var(--accent); border-color: var(--accent); }
+.pag-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+.pag-btn:not(:disabled):hover { 
+  background: var(--accent); 
+  border-color: var(--accent); 
+}
 
 .action-btn {
   width: 100%;
@@ -168,94 +193,36 @@ body { background: var(--bg-deep); color: var(--text-main); }
   color: white;
   cursor: pointer;
   transition: var(--ease);
+  text-align: center;
 }
 
 .action-btn:hover { background: var(--accent); }
 
-.loader { text-align: center; padding: 40px; color: var(--text-dim); }
-
-/* =========================================
-   ADICIONAIS: PÁGINA DE RECLAMAÇÃO (DETALHE)
-   ========================================= */
-
-/* Header da página de detalhes para não ficar cinza */
-.detail-header {
-  display: flex;
-  align-items: center;
-  gap: 20px;
-  margin-bottom: 45px;
+/* --- FEEDBACK VISUAL (LOADER) --- */
+.loader { 
+  text-align: center; 
+  padding: 40px; 
+  color: var(--text-dim); 
 }
 
-.detail-header h1 {
-  color: white !important;
-}
-
-/* Grid de colunas para o Detalhe */
-.detail-grid {
-  display: grid;
-  grid-template-columns: 1fr 320px;
-  gap: 30px;
-  align-items: start;
-}
-
-/* Box da Solução gerada por IA */
-.solution-container {
-  background: rgba(255, 255, 255, 0.02);
-  padding: 30px;
-  border-radius: 15px;
-  border: 1px solid var(--border-ui);
-  margin: 25px 0;
-}
-
-.ai-label {
+/* --- ESPECÍFICOS DA PÁGINA DE DETALHES (IA) --- */
+.ai-section-label {
   color: var(--accent);
-  font-weight: 800;
-  font-size: 0.7rem;
+  font-weight: bold;
   text-transform: uppercase;
+  font-size: 0.75rem;
   letter-spacing: 1px;
-  display: block;
-  margin-bottom: 15px;
 }
 
-/* Cards laterais informativos */
-.info-sidebar {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
+.solution-box {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--border-ui);
+  padding: 25px;
+  border-radius: 15px;
+  margin-top: 20px;
+  line-height: 1.7;
 }
 
-.info-label {
-  display: block;
-  font-size: 0.7rem;
-  color: var(--text-dim);
-  text-transform: uppercase;
-  margin-bottom: 5px;
-}
-
-.info-value {
-  font-weight: 500;
-  color: white;
-  margin-bottom: 20px;
-}
-
-/* Botão de gerar solução específico */
-.generate-ai-btn {
-  background: var(--accent);
-  color: white;
-  border: none;
-  padding: 14px 30px;
-  border-radius: 12px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: var(--ease);
-}
-
-.generate-ai-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 20px rgba(99, 102, 241, 0.2);
-}
-
-.generate-ai-btn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
+/* Utilitário para cores de prioridade no texto */
+.p-5 { color: var(--danger) !important; }
+.p-4 { color: #fb923c !important; }
