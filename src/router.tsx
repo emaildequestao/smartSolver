@@ -8,8 +8,8 @@ import Login from './pages/Login'
 export default function AppRoutes() {
   return (
     <Routes>
-      <Route path="/" element={<Login/>} />
-      <Route path="/dashboard" element={<Dashboard/>} />
+      <Route path="/" element={<Dashboard/>} />
+      <Route path="/login" element={<Login/>} />
       <Route path="/complaint/:id" element={<PageComplaint/>} />
       <Route path="/graphics" element={<PageGraphics/>} />
       <Route path="/importantcomplaints" element={<ImportantComplaints/>} />
