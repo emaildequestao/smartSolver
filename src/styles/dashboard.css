@@ -57,74 +57,76 @@ body { background: var(--bg-deep); color: var(--text-main); }
 }
 
 .main-header { 
-  text-align: center;
   margin-bottom: 45px;
-  background: transparent !important;
 }
 
-.main-header h1 { 
-  font-size: 2rem; 
-  font-weight: 800; 
-  color: white; 
-  letter-spacing: -0.5px;
+.main-header h1 {
+  color: white;
+  font-size: 2.2rem;
 }
 
-/* Filtros */
-.filter-card {
-  background: var(--glass);
-  padding: 25px; border-radius: var(--radius); border: 1px solid var(--border-ui);
-  margin-bottom: 40px;
-  backdrop-filter: blur(10px);
-}
-
-.search-grid { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 15px; }
-
-.input-container { position: relative; display: flex; align-items: center; }
-.icon-search { position: absolute; left: 15px; color: var(--text-dim); }
-
-.search-grid input, .search-grid select {
-  width: 100%; padding: 14px 14px 14px 45px; background: #070b14; border: 1px solid var(--border-ui);
-  border-radius: 12px; color: white; outline: none; transition: var(--ease);
-}
-
-.search-grid select { padding-left: 15px; cursor: pointer; }
-
-/* Grid de Reclamações */
-.complaints-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 24px; }
-
+/* Cards e Filtros */
 .glass-card {
-  background: var(--bg-card); padding: 25px; border-radius: var(--radius);
-  border: 1px solid var(--border-ui); transition: var(--ease);
-  display: flex; flex-direction: column;
+  background: var(--bg-card);
+  border: 1px solid var(--border-ui);
+  border-radius: var(--radius);
+  padding: 24px;
+  transition: var(--ease);
 }
 
-.glass-card:hover {
-  transform: translateY(-10px);
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.category-pill {
+  background: var(--accent);
+  color: white;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.priority-indicator {
+  font-size: 0.75rem;
+  font-weight: bold;
+  color: var(--text-dim);
+}
+
+/* Botões de Ação */
+.pag-btn {
+  background: var(--bg-card);
+  border: 1px solid var(--border-ui);
+  color: white;
+  padding: 10px 20px;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: var(--ease);
+}
+
+.pag-btn:hover {
+  background: var(--accent);
   border-color: var(--accent);
-  box-shadow: 0 20px 40px rgba(0,0,0,0.3);
 }
-
-.card-header { display: flex; justify-content: space-between; margin-bottom: 18px; align-items: center; }
-.category-pill { background: rgba(99, 102, 241, 0.1); color: var(--accent); padding: 4px 12px; border-radius: 8px; font-size: 0.7rem; font-weight: 700; }
-
-.priority-indicator { font-weight: 800; font-size: 0.8rem; }
-.p-5, .p-4 { color: var(--danger); }
-.p-1, .p-2 { color: #10b981; }
-
-.glass-card h4 { font-size: 1.2rem; margin-bottom: 10px; color: white; }
-.glass-card p { color: var(--text-dim); font-size: 0.9rem; line-height: 1.6; margin-bottom: 25px; }
 
 .action-btn {
-  margin-top: auto; padding: 14px; border-radius: 12px; border: 1px solid var(--border-ui);
-  background: transparent; color: white; cursor: pointer; transition: var(--ease); font-weight: 600;
+  width: 100%;
+  margin-top: 20px;
+  padding: 12px;
+  border-radius: 12px;
+  border: none;
+  background: var(--glass);
+  color: white;
+  cursor: pointer;
+  transition: var(--ease);
 }
 
-.action-btn:hover { background: white; color: var(--bg-deep); }
+.action-btn:hover {
+  background: var(--accent);
+}
 
-/* Paginação */
-.pagination-bar { margin-top: 50px; display: flex; align-items: center; justify-content: center; gap: 20px; padding-bottom: 40px; }
-.pag-btn { background: #1e293b; border: 1px solid var(--border-ui); color: white; padding: 12px 24px; border-radius: 12px; cursor: pointer; transition: var(--ease); }
-.pag-btn:hover:not(:disabled) { background: var(--accent); }
-.pag-btn:disabled { opacity: 0.3; cursor: not-allowed; }
-
-.loader { grid-column: 1/-1; text-align: center; padding: 50px; color: var(--text-dim); }
+/* Utilitários */
+.loader { text-align: center; padding: 40px; color: var(--text-dim); }
