@@ -1,87 +1,10 @@
-/* --- LOGIN PAGE STYLES --- */
-.login-layout {
-  min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: radial-gradient(circle at top right, #1e1b4b, #0f172a);
-  padding: 20px;
-}
+/* ... manter o início igual até .login-form ... */
 
-.login-card {
-  width: 100%;
-  max-width: 420px;
-  background: var(--bg-card);
-  border: 1px solid var(--border-ui);
-  border-radius: var(--radius);
-  padding: 40px;
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-}
-
-.login-header {
-  text-align: center;
-  margin-bottom: 35px;
-}
-
-.login-header .logo-text {
-  display: block;
-  font-size: 2rem;
-  margin-bottom: 8px;
-}
-
-.login-header p {
-  color: var(--text-dim);
-  font-size: 0.9rem;
-}
-
-.login-form {
+.login-actions {
   display: flex;
   flex-direction: column;
-  gap: 20px;
-}
-
-.form-group {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.form-group label {
-  font-size: 0.75rem;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  color: var(--text-dim);
-  font-weight: 600;
-}
-
-.login-input-wrapper {
-  position: relative;
-  background: rgba(0, 0, 0, 0.2);
-  border: 1px solid var(--border-ui);
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  padding: 0 15px;
-  transition: var(--ease);
-}
-
-.login-input-wrapper:focus-within {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
-}
-
-.login-input-wrapper input {
-  background: transparent;
-  border: none;
-  color: white;
-  padding: 14px 10px;
-  width: 100%;
-  outline: none;
-  font-size: 0.95rem;
-}
-
-.login-input-wrapper svg {
-  color: var(--text-dim);
+  gap: 12px;
+  margin-top: 15px;
 }
 
 .btn-login {
@@ -94,34 +17,58 @@
   font-size: 1rem;
   cursor: pointer;
   transition: var(--ease);
-  margin-top: 10px;
 }
 
-.btn-login:hover {
+.btn-login:hover:not(:disabled) {
   filter: brightness(1.1);
   transform: translateY(-2px);
+}
+
+/* Estilo para o botão secundário (Criar Conta) */
+.btn-secondary {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-main);
+  border: 1px solid var(--border-ui);
+  padding: 14px;
+  border-radius: 12px;
+  font-weight: 500;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: var(--ease);
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: var(--text-dim);
 }
 
 .btn-content {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: 10px;
 }
 
-.login-footer {
-  margin-top: 25px;
-  text-align: center;
-}
-
-.login-footer a {
-  color: var(--accent);
-  text-decoration: none;
+.login-error-msg {
+  background: rgba(244, 63, 94, 0.1);
+  color: #f43f5e;
+  padding: 12px;
+  border-radius: 10px;
   font-size: 0.85rem;
-  font-weight: 500;
-  transition: var(--ease);
+  text-align: center;
+  border: 1px solid rgba(244, 63, 94, 0.2);
 }
 
-.login-footer a:hover {
-  text-decoration: underline;
+.spinner {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.btn-login:disabled, .btn-secondary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
