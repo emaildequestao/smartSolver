@@ -1,45 +1,39 @@
-import React from 'react';
-import '../styles/advice_page.css';
-import { useState } from 'react';
+import React, { useState } from 'react';
+import '../styles/dashboard.css';
 
 const API_URL = import.meta.env.VITE_APP_API_URL || 'http://localhost:8000';
 
+// Auxiliares de Formatação
 function FormattedText({ text }: { text: string }) {
   const lines = text.split('\n');
-
   return (
-    <>
+    <div style={{ color: 'var(--text-main)', lineHeight: '1.6' }}>
       {lines.map((line, i) => {
-        if (line.startsWith('### '))  return <h3 key={i}>{parseInline(line.slice(4))}</h3>;
-        if (line.startsWith('#### ')) return <h4 key={i}>{parseInline(line.slice(5))}</h4>;
-        if (line.startsWith('* '))    return <li key={i}>{parseInline(line.slice(2))}</li>;
+        if (line.startsWith('### '))  return <h3 key={i} style={{ margin: '15px 0 10px' }}>{parseInline(line.slice(4))}</h3>;
+        if (line.startsWith('* '))    return <li key={i} style={{ marginLeft: '20px' }}>{parseInline(line.slice(2))}</li>;
         if (line.trim() === '')       return <br key={i} />;
-        return <p key={i}>{parseInline(line)}</p>;
+        return <p key={i} style={{ marginBottom: '10px' }}>{parseInline(line)}</p>;
       })}
-    </>
+    </div>
   );
 }
 
 function parseInline(text: string): React.ReactNode[] {
   const parts = text.split(/(\*\*.*?\*\*|\*.*?\*)/g);
   return parts.map((part, i) => {
-    if (part.startsWith('**') && part.endsWith('**')) return <strong key={i}>{part.slice(2, -2)}</strong>;
-    if (part.startsWith('*')  && part.endsWith('*'))  return <em key={i}>{part.slice(1, -1)}</em>;
+    if (part.startsWith('**') && part.endsWith('**')) return <strong key={i} style={{ color: 'var(--accent)' }}>{part.slice(2, -2)}</strong>;
     return part;
   });
 }
 
-function ImportanceDots({ value }: { value: number }) {
-  return (
-    <div className="importance-dots">
-      {[1, 2, 3, 4, 5].map((i) => (
-        <span
-          key={i}
-          className={`importance-dot ${i <= value ? 'importance-dot--active' : ''} ${value >= 4 && i <= value ? 'importance-dot--high' : ''}`}
-        />
-      ))}
-    </div>
-  );
+function formatDate(dateStr: string): string {
+  if (!dateStr) return '—';
+  try {
+    const [datePart, , timePart] = dateStr.split(' ');
+    const [day, month, year] = datePart.split('/');
+    const date = new Date(`${year}-${month}-${day}`);
+    return date.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' }) + (timePart ? ` às ${timePart}` : '');
+  } catch { return dateStr; }
 }
 
 type ComplaintProps = {
@@ -51,27 +45,6 @@ type ComplaintProps = {
   complaintorigin: string;
   complaintimportance: number;
 };
-
-async function fetchAIAnalysis(complaintTitle: string, complaintText: string): Promise<string> {
-  const res = await fetch(`${API_URL}/ai-analysis`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ title: complaintTitle, text: complaintText }),
-  });
-
-  const data = await res.json();
-  return data.solution ?? 'Desculpe, não foi possível gerar uma solução no momento.';
-}
-
-function formatDate(dateStr: string): string {
-  if (!dateStr) return '—';
-  const [datePart, , timePart] = dateStr.split(' '); // "21/04/2026 às 19:30"
-  const [day, month, year] = datePart.split('/');
-  if (!day || !month || !year) return dateStr;
-  const date = new Date(`${year}-${month}-${day}`);
-  const formattedDate = date.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' });
-  return timePart ? `${formattedDate} às ${timePart}` : formattedDate;
-}
 
 export default function Complaint({
   complaintTitle,
@@ -88,90 +61,77 @@ export default function Complaint({
   const handleGenerateSolution = async () => {
     setLoading(true);
     try {
-      const aiSolution = await fetchAIAnalysis(complaintTitle, complaintText);
-      setSolution(aiSolution);
-    } catch (err) {
-      console.error(err);
-      setSolution('Erro ao gerar solução. Tente novamente.');
+      const res = await fetch(`${API_URL}/ai-analysis`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title: complaintTitle, text: complaintText }),
+      });
+      const data = await res.json();
+      setSolution(data.solution);
+    } catch {
+      setSolution('Erro ao gerar análise.');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="meubody">
+    <div className="layout">
+      <div className="main-container">
+        <header className="main-header" style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+          <button className="pag-btn" onClick={() => window.history.back()}>← Voltar</button>
+          <h1>Recomendações</h1>
+        </header>
 
-      {/* ── Header ── */}
-      <header>
-        <button className="back-button" onClick={() => window.history.back()}>
-          ← Voltar
-        </button>
-        <h1>Recomendações</h1>
-      </header>
-
-      {/* ── Main ── */}
-      <main>
-        <div className="complaint-card-detail">
-          <h1 className="complaint-title">{complaintTitle}</h1>
-          <p className="complaint-body">{complaintText}</p>
-
-          <span className="ai-section-label">Análise por IA</span>
-
-          {solution && (
-            <div className="solution">
-              <FormattedText text={solution} />
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 320px', gap: '30px', alignItems: 'start' }}>
+          
+          {/* Coluna Principal */}
+          <div className="glass-card">
+            <div className="card-header">
+              <span className="category-pill">{complaintcategory}</span>
+              <span className="priority-indicator">Nível {complaintimportance}</span>
             </div>
-          )}
+            
+            <h2 style={{ fontSize: '1.8rem', marginBottom: '20px' }}>{complaintTitle}</h2>
+            <p style={{ color: 'var(--text-dim)', fontSize: '1.1rem', marginBottom: '40px' }}>{complaintText}</p>
 
-          <button
-            className="generate-btn"
-            onClick={handleGenerateSolution}
-            disabled={loading}
-          >
-            {loading ? (
-              <>
-                <span className="spinner" />
-                Gerando...
-              </>
-            ) : (
-              'Gerar Solução com IA'
+            {solution && (
+              <div style={{ background: 'rgba(255,255,255,0.02)', padding: '30px', borderRadius: '15px', border: '1px solid var(--border-ui)', marginBottom: '30px' }}>
+                <label style={{ color: 'var(--accent)', fontWeight: 'bold', fontSize: '0.8rem', textTransform: 'uppercase' }}>Análise Inteligente</label>
+                <div style={{ marginTop: '15px' }}>
+                  <FormattedText text={solution} />
+                </div>
+              </div>
             )}
-          </button>
+
+            <button className="action-btn" onClick={handleGenerateSolution} disabled={loading} style={{ width: 'auto', padding: '12px 40px' }}>
+              {loading ? "Sincronizando..." : "Gerar Solução com IA"}
+            </button>
+          </div>
+
+          {/* Lateral de Infos */}
+          <aside style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+            <div className="glass-card">
+              <h4 style={{ color: 'var(--text-dim)', fontSize: '0.7rem', textTransform: 'uppercase', marginBottom: '20px', letterSpacing: '1px' }}>Informações</h4>
+              
+              <div style={{ marginBottom: '20px' }}>
+                <label style={{ display: 'block', fontSize: '0.7rem', color: 'var(--text-dim)', marginBottom: '5px' }}>DATA DO REGISTRO</label>
+                <p style={{ fontWeight: '500' }}>{formatDate(complaintdate)}</p>
+              </div>
+
+              <div style={{ marginBottom: '20px' }}>
+                <label style={{ display: 'block', fontSize: '0.7rem', color: 'var(--text-dim)', marginBottom: '5px' }}>ORIGEM DO CANAL</label>
+                <p style={{ fontWeight: '500' }}>{complaintorigin || 'Não informada'}</p>
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '0.7rem', color: 'var(--text-dim)', marginBottom: '5px' }}>SOLUÇÃO PRÉVIA</label>
+                <p style={{ fontSize: '0.9rem', color: 'var(--text-dim)' }}>{complaintsolution || 'Sem registro anterior'}</p>
+              </div>
+            </div>
+          </aside>
         </div>
-      </main>
-
-      {/* ── Aside ── */}
-      <aside>
-        <p className="aside-title">Informações Adicionais</p>
-
-        <div className="info-card">
-          <p className="info-card-label">Categoria</p>
-          <span className="badge">{complaintcategory || '—'}</span>
-        </div>
-
-        <div className="info-card">
-          <p className="info-card-label">Data</p>
-          <p className="info-card-value">{formatDate(complaintdate)}</p>
-        </div>
-
-        <div className="info-card">
-          <p className="info-card-label">Origem</p>
-          <p className="info-card-value">{complaintorigin || '—'}</p>
-        </div>
-
-        <div className="info-card">
-          <p className="info-card-label">Urgência</p>
-          <ImportanceDots value={complaintimportance} />
-        </div>
-
-        <div className="info-card">
-          <p className="info-card-label">Solução Registrada</p>
-          <p className="info-card-value">
-            {complaintsolution || 'Nenhuma solução registrada'}
-          </p>
-        </div>
-      </aside>
-
+      </div>
     </div>
   );
 }
