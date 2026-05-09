@@ -33,28 +33,45 @@ const IMPORTANCIAS = [1, 2, 3, 4, 5];
 export default function Dashboard() {
   const navegar = useNavigate();
   
-  // Controle de Acesso Corporativo
-  const [isLoggedIn, setIsLoggedIn] = useState(false); 
+  // 1. O sistema verifica se existe o token salvo no login
+  const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem('token_smartsolver')); 
   
-  // Estados de Dados
   const [listaOriginal, setListaOriginal] = useState<Complaint[]>([]);
   const [loading, setLoading] = useState(false);
   
-  // Estados de Filtro
   const [page, setPage] = useState(1);
   const [categoria, setCategoria] = useState('');
   const [importancia, setImportancia] = useState('');
   const [busca, setBusca] = useState('');
 
-  // Busca de dados (Apenas para autenticados)
+  // 2. Busca de dados enviando o Token de Autorização
   const fetchComplaints = async () => {
-    if (!isLoggedIn) return;
+    const token = localStorage.getItem('token_smartsolver');
+    if (!token) {
+        setIsLoggedIn(false);
+        return;
+    }
+
     setLoading(true);
     try {
-      const res = await fetch(`${API_URL}/latest?n=100`);
+      const res = await fetch(`${API_URL}/latest?n=100`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`, // Envia o carimbo para a API
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (res.status === 401) { // Token expirado ou inválido
+        handleLogout();
+        return;
+      }
+
       if (!res.ok) throw new Error();
+      
       const data = await res.json();
       setListaOriginal(data.items || []);
+      setIsLoggedIn(true);
     } catch (err) {
       console.error("Erro de conexão corporativa:", err);
     } finally {
@@ -62,14 +79,21 @@ export default function Dashboard() {
     }
   };
 
+  // Sincroniza a autenticação ao carregar a página
   useEffect(() => {
     fetchComplaints();
-  }, [isLoggedIn]);
+  }, []);
 
-  // Lógica de Filtragem (Bloqueada se não logado para evitar bugs de estado)
+  // 3. Função de Logout Real
+  const handleLogout = () => {
+    localStorage.removeItem('token_smartsolver'); // Remove o carimbo
+    setIsLoggedIn(false);
+    setListaOriginal([]);
+    navegar('/login');
+  };
+
   const listaFiltrada = useMemo(() => {
     if (!isLoggedIn) return [];
-
     let resultado = [...listaOriginal];
 
     if (busca) {
@@ -79,19 +103,12 @@ export default function Dashboard() {
         item.complaint_description.toLowerCase().includes(termo)
       );
     }
-
-    if (categoria) {
-      resultado = resultado.filter(item => item.complaint_category === categoria);
-    }
-
-    if (importancia) {
-      resultado = resultado.filter(item => item.complaint_importance.toString() === importancia);
-    }
-
+    if (categoria) resultado = resultado.filter(item => item.complaint_category === categoria);
+    if (importancia) resultado = resultado.filter(item => item.complaint_importance.toString() === importancia);
+    
     return resultado;
   }, [busca, categoria, importancia, listaOriginal, isLoggedIn]);
 
-  // Reset de página ao filtrar
   useEffect(() => { setPage(1); }, [busca, categoria, importancia]);
 
   const totalPages = Math.ceil(listaFiltrada.length / PER_PAGE) || 1;
@@ -99,7 +116,6 @@ export default function Dashboard() {
 
   return (
     <div className="layout">
-      {/* SIDEBAR CORPORATIVA */}
       <aside className="sidebar">
         <div className="sidebar-top">
           <div className="sidebar-header">
@@ -116,7 +132,6 @@ export default function Dashboard() {
               </button>
             </div>
 
-            {/* Gerenciamento: Sumir se não for admin logado */}
             {isLoggedIn && (
               <div className="nav-group">
                 <label>Administração</label>
@@ -127,7 +142,6 @@ export default function Dashboard() {
 
             <div className="nav-group">
               <label>Análise</label>
-              {/* Botão Gráficos Bloqueado */}
               <button 
                 className={`nav-item ${!isLoggedIn ? 'disabled-nav' : ''}`}
                 onClick={() => isLoggedIn && navegar('/graphics')}
@@ -137,7 +151,6 @@ export default function Dashboard() {
                 {!isLoggedIn && <Lock size={12} className="lock-icon" />}
               </button>
 
-              {/* Botão Urgentes Bloqueado */}
               <button 
                 className={`nav-item warning ${!isLoggedIn ? 'disabled-nav' : ''}`}
                 onClick={() => isLoggedIn && navegar('/importantcomplaints')}
@@ -152,7 +165,7 @@ export default function Dashboard() {
 
         <div className="sidebar-footer">
           {isLoggedIn ? (
-            <button className="nav-item logout-btn" onClick={() => setIsLoggedIn(false)}>
+            <button className="nav-item logout-btn" onClick={handleLogout}>
               <LogOut size={18} />
               <span>Encerrar Sessão</span>
             </button>
@@ -165,7 +178,6 @@ export default function Dashboard() {
         </div>
       </aside>
 
-      {/* CONTEÚDO PRINCIPAL */}
       <div className="main-container">
         <header className="main-header">
           <div className="header-info">
@@ -175,13 +187,12 @@ export default function Dashboard() {
           {isLoggedIn && (
             <div className="user-badge admin">
               <ShieldCheck size={14} />
-              Admin
+              Admin Corporativo
             </div>
           )}
         </header>
 
         <main className="content-area">
-          {/* Filtros: Travados se não logado */}
           <div className={`filter-card ${!isLoggedIn ? 'locked-ui' : ''}`}>
             <div className="search-grid">
               <div className="input-container">
@@ -207,7 +218,6 @@ export default function Dashboard() {
 
           <div className="complaints-grid">
             {!isLoggedIn ? (
-              /* ESTADO DESLOGADO */
               <div className="login-overlay">
                 <div className="glass-card central-lock">
                   <Lock size={40} />
@@ -223,7 +233,6 @@ export default function Dashboard() {
             ) : itensExibidos.length === 0 ? (
               <div className="loader">Nenhum protocolo encontrado.</div>
             ) : (
-              /* LISTA PARA ADMIN LOGADO */
               itensExibidos.map((item) => (
                 <div key={item.id} className="glass-card">
                   <div className="card-header">
@@ -242,7 +251,6 @@ export default function Dashboard() {
             )}
           </div>
 
-          {/* Paginação condicional */}
           {isLoggedIn && listaFiltrada.length > PER_PAGE && (
             <div className="pagination-bar">
               <button 
