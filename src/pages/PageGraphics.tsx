@@ -5,7 +5,6 @@ import Pie from '../components/Graphic_pie';
 import OriginBarChart from '../components/Graphic_bar';
 import '../styles/graphics.css';
 
-// Configuração dos gráficos mantendo os componentes originais
 const GRAPHS = [
   { 
     id: 'line',  
@@ -32,16 +31,14 @@ export default function PageGraphics() {
 
   return (
     <div className="graphics-layout">
-      {/* Header com o nome original e ícone de retorno */}
       <header className="graphics-header">
         <button className="back-button" onClick={() => navegar(-1)}>
           <ArrowLeft size={20} />
           <span>Voltar</span>
         </button>
-        <h2>Gráficos Analíticos</h2>
+        <h1>Gráficos Analíticos</h1>
       </header>
 
-      {/* Grid com espaçamentos corrigidos */}
       <main className="graphics-main">
         {GRAPHS.map(({ id, title, icon, component }) => (
           <section key={id} className="graph-glass-card">
