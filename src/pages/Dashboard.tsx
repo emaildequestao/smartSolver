@@ -1,6 +1,15 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { BarChart3, AlertCircle, Search } from 'lucide-react'; 
+import { 
+  BarChart3, 
+  AlertCircle, 
+  Search, 
+  LogOut, 
+  LogIn, 
+  LayoutDashboard, 
+  Lock, 
+  ShieldCheck 
+} from 'lucide-react'; 
 import LoadButton from '../components/LoadButton';
 import LoadDataButton from '../components/LoadDataButton';
 import type { Complaint } from '../types/complaint';
@@ -24,28 +33,30 @@ const IMPORTANCIAS = [1, 2, 3, 4, 5];
 export default function Dashboard() {
   const navegar = useNavigate();
   
-  // Estados de dados
+  // Controle de Acesso Corporativo
+  const [isLoggedIn, setIsLoggedIn] = useState(false); 
+  
+  // Estados de Dados
   const [listaOriginal, setListaOriginal] = useState<Complaint[]>([]);
-  const [listaFiltrada, setListaFiltrada] = useState<Complaint[]>([]);
   const [loading, setLoading] = useState(false);
   
-  // Estados de controle dos filtros
+  // Estados de Filtro
   const [page, setPage] = useState(1);
   const [categoria, setCategoria] = useState('');
   const [importancia, setImportancia] = useState('');
   const [busca, setBusca] = useState('');
 
-  // Busca inicial dos dados na API
+  // Busca de dados (Apenas para autenticados)
   const fetchComplaints = async () => {
+    if (!isLoggedIn) return;
     setLoading(true);
     try {
       const res = await fetch(`${API_URL}/latest?n=100`);
+      if (!res.ok) throw new Error();
       const data = await res.json();
-      const items = data.items || [];
-      setListaOriginal(items);
-      setListaFiltrada(items);
+      setListaOriginal(data.items || []);
     } catch (err) {
-      console.error("Erro na busca:", err);
+      console.error("Erro de conexão corporativa:", err);
     } finally {
       setLoading(false);
     }
@@ -53,10 +64,12 @@ export default function Dashboard() {
 
   useEffect(() => {
     fetchComplaints();
-  }, []);
+  }, [isLoggedIn]);
 
-  // Lógica de Filtragem Reativa (Front-end)
-  useEffect(() => {
+  // Lógica de Filtragem (Bloqueada se não logado para evitar bugs de estado)
+  const listaFiltrada = useMemo(() => {
+    if (!isLoggedIn) return [];
+
     let resultado = [...listaOriginal];
 
     if (busca) {
@@ -75,65 +88,117 @@ export default function Dashboard() {
       resultado = resultado.filter(item => item.complaint_importance.toString() === importancia);
     }
 
-    setListaFiltrada(resultado);
-    setPage(1); // Volta para a página 1 ao filtrar
-  }, [busca, categoria, importancia, listaOriginal]);
+    return resultado;
+  }, [busca, categoria, importancia, listaOriginal, isLoggedIn]);
 
-  // Paginação da lista filtrada
+  // Reset de página ao filtrar
+  useEffect(() => { setPage(1); }, [busca, categoria, importancia]);
+
   const totalPages = Math.ceil(listaFiltrada.length / PER_PAGE) || 1;
-  const offset = (page - 1) * PER_PAGE;
-  const itensExibidos = listaFiltrada.slice(offset, offset + PER_PAGE);
+  const itensExibidos = listaFiltrada.slice((page - 1) * PER_PAGE, page * PER_PAGE);
 
   return (
     <div className="layout">
+      {/* SIDEBAR CORPORATIVA */}
       <aside className="sidebar">
-        <div className="sidebar-header">
-          <span className="logo-text">SmartSolver</span>
+        <div className="sidebar-top">
+          <div className="sidebar-header">
+            <span className="logo-text">SmartSolver</span>
+            <span className="corp-tag">CORP</span>
+          </div>
+
+          <nav className="sidebar-nav">
+            <div className="nav-group">
+              <label>Sistema</label>
+              <button className="nav-item active">
+                <LayoutDashboard size={18} />
+                <span>Dashboard</span>
+              </button>
+            </div>
+
+            {/* Gerenciamento: Sumir se não for admin logado */}
+            {isLoggedIn && (
+              <div className="nav-group">
+                <label>Administração</label>
+                <LoadButton setLista={setListaOriginal} />
+                <LoadDataButton setLista={setListaOriginal} />
+              </div>
+            )}
+
+            <div className="nav-group">
+              <label>Análise</label>
+              {/* Botão Gráficos Bloqueado */}
+              <button 
+                className={`nav-item ${!isLoggedIn ? 'disabled-nav' : ''}`}
+                onClick={() => isLoggedIn && navegar('/graphics')}
+              >
+                <BarChart3 size={18} />
+                <span>Gráficos Analíticos</span>
+                {!isLoggedIn && <Lock size={12} className="lock-icon" />}
+              </button>
+
+              {/* Botão Urgentes Bloqueado */}
+              <button 
+                className={`nav-item warning ${!isLoggedIn ? 'disabled-nav' : ''}`}
+                onClick={() => isLoggedIn && navegar('/importantcomplaints')}
+              >
+                <AlertCircle size={18} />
+                <span>Urgentes</span>
+                {!isLoggedIn && <Lock size={12} className="lock-icon" />}
+              </button>
+            </div>
+          </nav>
         </div>
 
-        <nav className="sidebar-nav">
-          <div className="nav-group">
-            <label>Gerenciamento</label>
-            <LoadButton setLista={setListaOriginal} />
-            <LoadDataButton setLista={setListaOriginal} />
-          </div>
-
-          <div className="nav-group">
-            <label>Análise</label>
-            <button className="nav-item" onClick={() => navegar('/graphics')}>
-              <BarChart3 size={18} />
-              <span>Gráficos Analíticos</span>
+        <div className="sidebar-footer">
+          {isLoggedIn ? (
+            <button className="nav-item logout-btn" onClick={() => setIsLoggedIn(false)}>
+              <LogOut size={18} />
+              <span>Encerrar Sessão</span>
             </button>
-            <button className="nav-item warning" onClick={() => navegar('/importantcomplaints')}>
-              <AlertCircle size={18} />
-              <span>Urgentes</span>
+          ) : (
+            <button className="nav-item login-btn active-accent" onClick={() => navegar('/login')}>
+              <LogIn size={18} />
+              <span>Acesso Restrito</span>
             </button>
-          </div>
-        </nav>
+          )}
+        </div>
       </aside>
 
+      {/* CONTEÚDO PRINCIPAL */}
       <div className="main-container">
         <header className="main-header">
-          <h1>Dashboard</h1>
+          <div className="header-info">
+            <h1>Protocolos Internos</h1>
+            <p>{isLoggedIn ? 'Gestão de Reclamações Ativa' : 'Autenticação Necessária'}</p>
+          </div>
+          {isLoggedIn && (
+            <div className="user-badge admin">
+              <ShieldCheck size={14} />
+              Admin
+            </div>
+          )}
         </header>
 
         <main className="content-area">
-          <div className="filter-card">
+          {/* Filtros: Travados se não logado */}
+          <div className={`filter-card ${!isLoggedIn ? 'locked-ui' : ''}`}>
             <div className="search-grid">
               <div className="input-container">
                 <Search size={18} className="icon-search" />
                 <input 
                   type="text" 
-                  placeholder="Pesquisar protocolos..." 
+                  placeholder={isLoggedIn ? "Pesquisar protocolos..." : "Painel Bloqueado"} 
+                  disabled={!isLoggedIn}
                   value={busca}
                   onChange={(e) => setBusca(e.target.value)}
                 />
               </div>
-              <select value={categoria} onChange={(e) => setCategoria(e.target.value)}>
-                <option value="">Todas Categorias</option>
+              <select disabled={!isLoggedIn} value={categoria} onChange={(e) => setCategoria(e.target.value)}>
+                <option value="">Categorias</option>
                 {CATEGORIAS.map(cat => <option key={cat} value={cat}>{cat}</option>)}
               </select>
-              <select value={importancia} onChange={(e) => setImportancia(e.target.value)}>
+              <select disabled={!isLoggedIn} value={importancia} onChange={(e) => setImportancia(e.target.value)}>
                 <option value="">Prioridade</option>
                 {IMPORTANCIAS.map(num => <option key={num} value={num.toString()}>Nível {num}</option>)}
               </select>
@@ -141,11 +206,24 @@ export default function Dashboard() {
           </div>
 
           <div className="complaints-grid">
-            {loading ? (
-              <div className="loader">Sincronizando registros...</div>
+            {!isLoggedIn ? (
+              /* ESTADO DESLOGADO */
+              <div className="login-overlay">
+                <div className="glass-card central-lock">
+                  <Lock size={40} />
+                  <h2>Área Restrita</h2>
+                  <p>Por favor, realize o login corporativo para acessar os dados da SmartSolver.</p>
+                  <button className="action-btn" onClick={() => navegar('/login')}>
+                    Ir para Login
+                  </button>
+                </div>
+              </div>
+            ) : loading ? (
+              <div className="loader">Sincronizando base de dados...</div>
             ) : itensExibidos.length === 0 ? (
-                <div className="loader">Nenhum protocolo encontrado.</div>
+              <div className="loader">Nenhum protocolo encontrado.</div>
             ) : (
+              /* LISTA PARA ADMIN LOGADO */
               itensExibidos.map((item) => (
                 <div key={item.id} className="glass-card">
                   <div className="card-header">
@@ -157,14 +235,15 @@ export default function Dashboard() {
                   <h4>{item.complaint_title}</h4>
                   <p>{item.complaint_description.substring(0, 100)}...</p>
                   <button className="action-btn" onClick={() => navegar(`/complaint/${item.id}`)}>
-                    Analisar Protocolo
+                    Analisar Detalhes
                   </button>
                 </div>
               ))
             )}
           </div>
 
-          {listaFiltrada.length > PER_PAGE && (
+          {/* Paginação condicional */}
+          {isLoggedIn && listaFiltrada.length > PER_PAGE && (
             <div className="pagination-bar">
               <button 
                 className="pag-btn" 
