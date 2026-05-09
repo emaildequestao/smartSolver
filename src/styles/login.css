@@ -1,14 +1,109 @@
-/* ... manter o início igual até .login-form ... */
+/* RESET LOCAL */
+.login-screen * {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: 'Inter', sans-serif;
+}
 
-.login-actions {
+.login-screen {
+  min-height: 100vh;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #0f172a; /* Fundo Escuro Profundo */
+  background-image: radial-gradient(circle at 20% 30%, #1e1b4b 0%, transparent 50%),
+                    radial-gradient(circle at 80% 70%, #1e293b 0%, transparent 50%);
+  padding: 20px;
+}
+
+.login-box {
+  background: #1e293b;
+  width: 100%;
+  max-width: 400px;
+  padding: 40px;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+}
+
+.login-header {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.logo-brand {
+  color: #ffffff;
+  font-size: 2.2rem;
+  font-weight: 800;
+  letter-spacing: -1px;
+}
+
+.sub-tag {
+  color: #94a3b8;
+  font-size: 0.85rem;
+  margin-top: 5px;
+}
+
+.login-form-body {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.input-group label {
+  color: #94a3b8;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.input-field {
+  display: flex;
+  align-items: center;
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 0 15px;
+  transition: all 0.3s ease;
+}
+
+.input-field:focus-within {
+  border-color: #6366f1;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+}
+
+.field-icon {
+  color: #64748b;
+}
+
+.input-field input {
+  background: transparent;
+  border: none;
+  color: white;
+  padding: 12px 10px;
+  width: 100%;
+  outline: none;
+  font-size: 1rem;
+}
+
+.action-stack {
   display: flex;
   flex-direction: column;
   gap: 12px;
-  margin-top: 15px;
+  margin-top: 10px;
 }
 
-.btn-login {
-  background: var(--accent);
+.primary-btn {
+  background: #6366f1;
   color: white;
   border: none;
   padding: 14px;
@@ -16,59 +111,57 @@
   font-weight: 600;
   font-size: 1rem;
   cursor: pointer;
-  transition: var(--ease);
-}
-
-.btn-login:hover:not(:disabled) {
-  filter: brightness(1.1);
-  transform: translateY(-2px);
-}
-
-/* Estilo para o botão secundário (Criar Conta) */
-.btn-secondary {
-  background: rgba(255, 255, 255, 0.05);
-  color: var(--text-main);
-  border: 1px solid var(--border-ui);
-  padding: 14px;
-  border-radius: 12px;
-  font-weight: 500;
-  font-size: 0.95rem;
-  cursor: pointer;
-  transition: var(--ease);
-}
-
-.btn-secondary:hover:not(:disabled) {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: var(--text-dim);
-}
-
-.btn-content {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 10px;
+  transition: all 0.2s ease;
 }
 
-.login-error-msg {
+.primary-btn:hover {
+  background: #4f46e5;
+  transform: translateY(-1px);
+}
+
+.secondary-btn {
+  background: rgba(255, 255, 255, 0.05);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 14px;
+  border-radius: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  transition: all 0.2s ease;
+}
+
+.secondary-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.error-alert {
   background: rgba(244, 63, 94, 0.1);
-  color: #f43f5e;
+  border: 1px solid rgba(244, 63, 94, 0.2);
+  color: #fb7185;
   padding: 12px;
   border-radius: 10px;
   font-size: 0.85rem;
   text-align: center;
-  border: 1px solid rgba(244, 63, 94, 0.2);
 }
 
-.spinner {
-  animation: spin 1s linear infinite;
+.spinning {
+  animation: rotate 1s linear infinite;
 }
 
-@keyframes spin {
+@keyframes rotate {
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
 }
 
-.btn-login:disabled, .btn-secondary:disabled {
-  opacity: 0.5;
+.primary-btn:disabled {
+  opacity: 0.6;
   cursor: not-allowed;
 }
