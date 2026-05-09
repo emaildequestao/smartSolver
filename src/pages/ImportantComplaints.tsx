@@ -7,7 +7,6 @@ import {
   ChevronLeft, 
   ChevronRight,
   LogOut,
-  Lock,
   ShieldAlert
 } from 'lucide-react'; 
 import ImportantComplaint from '../components/ImportantComplaint';
