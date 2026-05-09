@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Mail, Lock, LogIn, Loader2, UserPlus } from 'lucide-react';
 import '../styles/login.css';
@@ -40,73 +40,63 @@ export default function Login() {
   };
 
   return (
-    <div className="login-layout">
-      <div className="login-card">
-        <header className="login-header">
-          <span className="logo-text">SmartSolver</span>
-          <p>Acesse sua central de resoluções</p>
-        </header>
+    <div className="login-screen">
+      <div className="login-box">
+        <div className="login-header">
+          <h1 className="logo-brand">SmartSolver</h1>
+          <p className="sub-tag">Central de Resoluções Corporativas</p>
+        </div>
 
-        <form className="login-form" onSubmit={handleLogin}>
-          {erro && <div className="login-error-msg">{erro}</div>}
+        <form className="login-form-body" onSubmit={handleLogin}>
+          {erro && <div className="error-alert">{erro}</div>}
 
-          <div className="form-group">
-            <label htmlFor="email">E-mail Corporativo</label>
-            <div className="login-input-wrapper">
-              <Mail size={18} />
+          <div className="input-group">
+            <label>E-mail Corporativo</label>
+            <div className="input-field">
+              <Mail size={18} className="field-icon" />
               <input 
                 type="email" 
-                id="email" 
-                placeholder="nome@empresa.com"
+                placeholder="usuario@empresa.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                disabled={loading}
               />
             </div>
           </div>
 
-          <div className="form-group">
-            <label htmlFor="password">Senha</label>
-            <div className="login-input-wrapper">
-              <Lock size={18} />
+          <div className="input-group">
+            <label>Senha</label>
+            <div className="input-field">
+              <Lock size={18} className="field-icon" />
               <input 
                 type="password" 
-                id="password" 
-                placeholder="••••••••"
+                placeholder="Sua senha"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                disabled={loading}
               />
             </div>
           </div>
 
-          <div className="login-actions">
-            <button type="submit" className="btn-login" disabled={loading}>
-              <div className="btn-content">
-                {loading ? (
-                  <Loader2 size={20} className="spinner" />
-                ) : (
-                  <>
-                    <span>Entrar no Sistema</span>
-                    <LogIn size={20} />
-                  </>
-                )}
-              </div>
+          <div className="action-stack">
+            <button type="submit" className="primary-btn" disabled={loading}>
+              {loading ? (
+                <Loader2 className="spinning" size={20} />
+              ) : (
+                <>
+                  <span>Entrar no Sistema</span>
+                  <LogIn size={20} />
+                </>
+              )}
             </button>
 
-            {/* Novo Botão Criar Conta */}
             <button 
               type="button" 
-              className="btn-secondary" 
+              className="secondary-btn" 
               onClick={() => navegar('/create_account')}
-              disabled={loading}
             >
-              <div className="btn-content">
-                <UserPlus size={18} />
-                <span>Criar Conta Corporativa</span>
-              </div>
+              <UserPlus size={18} />
+              <span>Criar Nova Conta</span>
             </button>
           </div>
         </form>
