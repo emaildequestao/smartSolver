@@ -10,6 +10,7 @@ export default function AppRoutes() {
   return (
     <Routes>
       <Route path="/" element={<Dashboard/>} />
+      <Route path="/dashboard" element={<Dashboard/>} />
       <Route path="/create_account" element={<CreateAccount/>} />
       <Route path="/login" element={<Login/>} />
       <Route path="/complaint/:id" element={<PageComplaint/>} />
