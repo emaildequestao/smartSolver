@@ -5,7 +5,10 @@ import {
   LayoutDashboard, 
   AlertCircle, 
   ChevronLeft, 
-  ChevronRight 
+  ChevronRight,
+  LogOut,
+  Lock,
+  ShieldAlert
 } from 'lucide-react'; 
 import ImportantComplaint from '../components/ImportantComplaint';
 import '../styles/dashboard.css'; 
@@ -15,20 +18,47 @@ const PER_PAGE = 6;
 
 export default function ImportantComplaints() {
   const navegar = useNavigate();
+  const [isAuthorized, setIsAuthorized] = useState(false);
   const [lista, setLista] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
+  // Função de Logout
+  const handleLogout = () => {
+    localStorage.removeItem('token_smartsolver');
+    navegar('/login');
+  };
+
   const fetchUrgentes = async () => {
+    const token = localStorage.getItem('token_smartsolver');
+    
+    // Se não houver token, bloqueia e redireciona
+    if (!token) {
+      navegar('/login');
+      return;
+    }
+
     setLoading(true);
     try {
-      // Busca filtrada por importância 5 diretamente na API
       const url = `${API_URL}/latest?importance=5&n=${PER_PAGE}&page=${page}`;
-      const res = await fetch(url);
+      const res = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (res.status === 401) {
+        handleLogout();
+        return;
+      }
+
       const data = await res.json();
       setLista(data.items || []);
       setTotalPages(data.pages || 1);
+      setIsAuthorized(true); // Autoriza a exibição após sucesso
     } catch (err) {
       console.error("Erro ao buscar urgências:", err);
     } finally {
@@ -40,44 +70,67 @@ export default function ImportantComplaints() {
     fetchUrgentes(); 
   }, [page]);
 
+  if (!isAuthorized && !loading) return null;
+
   return (
     <div className="layout">
-      {/* Sidebar idêntica ao Dashboard para manter continuidade */}
       <aside className="sidebar">
-        <div className="sidebar-header">
-          <span className="logo-text">SmartSolver</span>
-        </div>
-        <nav className="sidebar-nav">
-          <div className="nav-group">
-            <label>Navegação</label>
-            <button className="nav-item" onClick={() => navegar('/')}>
-              <LayoutDashboard size={18} />
-              <span>Dashboard Geral</span>
-            </button>
-            <button className="nav-item" onClick={() => navegar('/graphics')}>
-              <BarChart3 size={18} />
-              <span>Gráficos Analíticos</span>
-            </button>
+        <div className="sidebar-top">
+          <div className="sidebar-header">
+            <span className="logo-text">SmartSolver</span>
+            <span className="corp-tag">CORP</span>
           </div>
-        </nav>
+          <nav className="sidebar-nav">
+            <div className="nav-group">
+              <label>Navegação</label>
+              <button className="nav-item" onClick={() => navegar('/dashboard')}>
+                <LayoutDashboard size={18} />
+                <span>Dashboard Geral</span>
+              </button>
+              <button className="nav-item" onClick={() => navegar('/graphics')}>
+                <BarChart3 size={18} />
+                <span>Gráficos Analíticos</span>
+              </button>
+            </div>
+            <div className="nav-group">
+              <label>Filtro Ativo</label>
+              <button className="nav-item warning active">
+                <AlertCircle size={18} />
+                <span>Urgentes</span>
+              </button>
+            </div>
+          </nav>
+        </div>
+
+        <div className="sidebar-footer">
+          <button className="nav-item logout-btn" onClick={handleLogout}>
+            <LogOut size={18} />
+            <span>Encerrar Sessão</span>
+          </button>
+        </div>
       </aside>
 
       <div className="main-container">
         <header className="main-header">
-          <h1>Reclamações Urgentes</h1>
+          <div className="header-info">
+            <h1>Reclamações Urgentes</h1>
+            <p>Protocolos Nível 5</p>
+          </div>
+          <div className="user-badge danger">
+            <ShieldAlert size={14} />
+            Acesso Crítico
+          </div>
         </header>
 
         <main className="content-area">
-          {/* Banner de status de prioridade máxima */}
           <div className="filter-card" style={{ borderLeft: '4px solid var(--danger)', display: 'flex', alignItems: 'center', gap: '15px' }}>
             <AlertCircle color="var(--danger)" size={24} />
             <div>
               <h3 style={{ color: 'white', fontSize: '1rem' }}>Fila de Prioridade Máxima</h3>
-              <p style={{ color: 'var(--text-dim)', fontSize: '0.85rem' }}>Exibindo apenas protocolos com nível de urgência 5.</p>
+              <p style={{ color: 'var(--text-dim)', fontSize: '0.85rem' }}>Visualizando apenas dados sensíveis com urgência máxima.</p>
             </div>
           </div>
 
-          {/* Grid de cards utilizando a mesma estrutura do Dashboard */}
           <div className="complaints-grid">
             {loading ? (
               <div className="loader">Sincronizando protocolos críticos...</div>
@@ -96,7 +149,6 @@ export default function ImportantComplaints() {
             )}
           </div>
 
-          {/* Barra de paginação harmônica */}
           {totalPages > 1 && (
             <div className="pagination-bar">
               <button 
