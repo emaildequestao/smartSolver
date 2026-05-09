@@ -24,66 +24,82 @@ const IMPORTANCIAS = [1, 2, 3, 4, 5];
 export default function Dashboard() {
   const navegar = useNavigate();
   
-  // Estados de Dados
-  const [lista, setLista] = useState<Complaint[]>([]);
-  const [totalPages, setTotalPages] = useState(1);
-  const [page, setPage] = useState(1);
+  // Estados de dados
+  const [listaOriginal, setListaOriginal] = useState<Complaint[]>([]);
+  const [listaFiltrada, setListaFiltrada] = useState<Complaint[]>([]);
   const [loading, setLoading] = useState(false);
   
-  // Estados de Filtro
+  // Estados de controle dos filtros
+  const [page, setPage] = useState(1);
   const [categoria, setCategoria] = useState('');
   const [importancia, setImportancia] = useState('');
   const [busca, setBusca] = useState('');
 
-  // Função de busca principal
+  // Busca inicial dos dados na API
   const fetchComplaints = async () => {
     setLoading(true);
     try {
-      // Construção da URL com Query Params
-      const params = new URLSearchParams({
-        n: PER_PAGE.toString(),
-        page: page.toString(),
-      });
-
-      if (categoria) params.append('complaint_category', categoria);
-      if (importancia) params.append('complaint_importance', importancia);
-      if (busca) params.append('q', busca); // 'q' é o padrão para busca textual
-
-      const res = await fetch(`${API_URL}/latest?${params.toString()}`);
+      const res = await fetch(`${API_URL}/latest?n=100`);
       const data = await res.json();
-      
-      setLista(data.items || []);
-      setTotalPages(data.pages || 1);
+      const items = data.items || [];
+      setListaOriginal(items);
+      setListaFiltrada(items);
     } catch (err) {
-      console.error("Erro ao buscar reclamações:", err);
+      console.error("Erro na busca:", err);
     } finally {
       setLoading(false);
     }
   };
 
-  // Efeito que dispara a busca sempre que um filtro ou a página muda
   useEffect(() => {
     fetchComplaints();
-  }, [page, categoria, importancia, busca]);
+  }, []);
 
-  const carregarDetalhes = (id: string) => navegar(`/complaint/${id}`);
+  // Lógica de Filtragem Reativa (Front-end)
+  useEffect(() => {
+    let resultado = [...listaOriginal];
+
+    if (busca) {
+      const termo = busca.toLowerCase();
+      resultado = resultado.filter(item => 
+        item.complaint_title.toLowerCase().includes(termo) ||
+        item.complaint_description.toLowerCase().includes(termo)
+      );
+    }
+
+    if (categoria) {
+      resultado = resultado.filter(item => item.complaint_category === categoria);
+    }
+
+    if (importancia) {
+      resultado = resultado.filter(item => item.complaint_importance.toString() === importancia);
+    }
+
+    setListaFiltrada(resultado);
+    setPage(1); // Volta para a página 1 ao filtrar
+  }, [busca, categoria, importancia, listaOriginal]);
+
+  // Paginação da lista filtrada
+  const totalPages = Math.ceil(listaFiltrada.length / PER_PAGE) || 1;
+  const offset = (page - 1) * PER_PAGE;
+  const itensExibidos = listaFiltrada.slice(offset, offset + PER_PAGE);
 
   return (
     <div className="layout">
       <aside className="sidebar">
         <div className="sidebar-header">
-          <span className="logo-text">Painel Geral</span>
+          <span className="logo-text">SmartSolver</span>
         </div>
 
         <nav className="sidebar-nav">
           <div className="nav-group">
-            <label>Ações</label>
-            <LoadButton setLista={setLista} />
-            <LoadDataButton setLista={setLista} />
+            <label>Gerenciamento</label>
+            <LoadButton setLista={setListaOriginal} />
+            <LoadDataButton setLista={setListaOriginal} />
           </div>
 
           <div className="nav-group">
-            <label>Visualização</label>
+            <label>Análise</label>
             <button className="nav-item" onClick={() => navegar('/graphics')}>
               <BarChart3 size={18} />
               <span>Gráficos Analíticos</span>
@@ -98,103 +114,75 @@ export default function Dashboard() {
 
       <div className="main-container">
         <header className="main-header">
-          <h2>Dashboard de Reclamações</h2>
+          <h1>Dashboard</h1>
         </header>
 
         <main className="content-area">
-          <section className="complaint-section">
-            
-            {/* BARRA DE FILTROS COMPLETA */}
-            <div className="reclamation-header" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: '15px' }}>
-              <h3>Filtros de Pesquisa</h3>
-              
-              <div className="search-filter-container" style={{ display: 'flex', width: '100%', gap: '10px', flexWrap: 'wrap' }}>
-                
-                {/* Busca por Texto */}
-                <div style={{ position: 'relative', flex: '2', minWidth: '250px' }}>
-                  <Search size={18} style={{ position: 'absolute', left: '10px', top: '12px', color: '#666' }} />
-                  <input 
-                    type="text"
-                    placeholder="Buscar no título ou descrição..."
-                    className="filter-btn"
-                    style={{ paddingLeft: '35px', width: '100%' }}
-                    value={busca}
-                    onChange={(e) => { setBusca(e.target.value); setPage(1); }}
-                  />
-                </div>
-
-                {/* Filtro de Categoria */}
-                <select 
-                  className="filter-btn" 
-                  style={{ flex: '1' }}
-                  value={categoria} 
-                  onChange={(e) => { setCategoria(e.target.value); setPage(1); }}
-                >
-                  <option value="">Todas as Categorias</option>
-                  {CATEGORIAS.map((cat) => (
-                    <option key={cat} value={cat}>{cat}</option>
-                  ))}
-                </select>
-
-                {/* Filtro de Importância */}
-                <select 
-                  className="filter-btn" 
-                  style={{ flex: '1' }}
-                  value={importancia} 
-                  onChange={(e) => { setImportancia(e.target.value); setPage(1); }}
-                >
-                  <option value="">Importância (Todas)</option>
-                  {IMPORTANCIAS.map((num) => (
-                    <option key={num} value={num.toString()}>Nível {num}</option>
-                  ))}
-                </select>
+          <div className="filter-card">
+            <div className="search-grid">
+              <div className="input-container">
+                <Search size={18} className="icon-search" />
+                <input 
+                  type="text" 
+                  placeholder="Pesquisar protocolos..." 
+                  value={busca}
+                  onChange={(e) => setBusca(e.target.value)}
+                />
               </div>
+              <select value={categoria} onChange={(e) => setCategoria(e.target.value)}>
+                <option value="">Todas Categorias</option>
+                {CATEGORIAS.map(cat => <option key={cat} value={cat}>{cat}</option>)}
+              </select>
+              <select value={importancia} onChange={(e) => setImportancia(e.target.value)}>
+                <option value="">Prioridade</option>
+                {IMPORTANCIAS.map(num => <option key={num} value={num.toString()}>Nível {num}</option>)}
+              </select>
             </div>
+          </div>
 
-            {/* LISTAGEM DE CARDS */}
-            <div className="complaints-container">
-              {loading ? (
-                <div className="status-box">Carregando dados...</div>
-              ) : lista.length === 0 ? (
-                <div className="status-box">Nenhuma reclamação encontrada para os filtros selecionados.</div>
-              ) : (
-                lista.map((item) => (
-                  <div key={item.id} className="complaint-card">
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
-                      <span className="badge">{item.complaint_category}</span>
-                      <span className={`importance-tag level-${item.complaint_importance}`} style={{ fontWeight: 'bold' }}>
-                        Nível {item.complaint_importance}
-                      </span>
-                    </div>
-                    <h4>{item.complaint_title}</h4>
-                    <p className="complaint-description">
-                      {item.complaint_description.substring(0, 150)}...
-                    </p>
-                    <button className="read-more-btn" onClick={() => carregarDetalhes(item.id)}>
-                      Analisar Reclamação
-                    </button>
+          <div className="complaints-grid">
+            {loading ? (
+              <div className="loader">Sincronizando registros...</div>
+            ) : itensExibidos.length === 0 ? (
+                <div className="loader">Nenhum protocolo encontrado.</div>
+            ) : (
+              itensExibidos.map((item) => (
+                <div key={item.id} className="glass-card">
+                  <div className="card-header">
+                    <span className="category-pill">{item.complaint_category}</span>
+                    <span className={`priority-indicator p-${item.complaint_importance}`}>
+                      Lv. {item.complaint_importance}
+                    </span>
                   </div>
-                ))
-              )}
-            </div>
+                  <h4>{item.complaint_title}</h4>
+                  <p>{item.complaint_description.substring(0, 100)}...</p>
+                  <button className="action-btn" onClick={() => navegar(`/complaint/${item.id}`)}>
+                    Analisar Protocolo
+                  </button>
+                </div>
+              ))
+            )}
+          </div>
 
-            {/* PAGINAÇÃO */}
-            <div className="pagination">
+          {listaFiltrada.length > PER_PAGE && (
+            <div className="pagination-bar">
               <button 
-                onClick={() => setPage((p) => Math.max(1, p - 1))} 
-                disabled={page === 1 || loading}
+                className="pag-btn" 
+                onClick={() => setPage(p => Math.max(1, p - 1))} 
+                disabled={page === 1}
               >
                 Anterior
               </button>
-              <span className="page-info">Página <strong>{page}</strong> de {totalPages}</span>
+              <span className="page-count">Página {page} de {totalPages}</span>
               <button 
-                onClick={() => setPage((p) => Math.min(totalPages, p + 1))} 
-                disabled={page === totalPages || loading}
+                className="pag-btn" 
+                onClick={() => setPage(p => Math.min(totalPages, p + 1))} 
+                disabled={page === totalPages}
               >
                 Próxima
               </button>
             </div>
-          </section>
+          )}
         </main>
       </div>
     </div>
