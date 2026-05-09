@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, LineChart, PieChart, BarChart3, Lock } from 'lucide-react';
+import { ArrowLeft, LineChart, PieChart, BarChart3} from 'lucide-react';
 import LineC from '../components/Graphic_line';
 import Pie from '../components/Graphic_pie';
 import OriginBarChart from '../components/Graphic_bar';
