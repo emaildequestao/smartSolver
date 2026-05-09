@@ -4,11 +4,13 @@ import PageComplaint from './pages/PageComplaint'
 import PageGraphics from './pages/PageGraphics'
 import ImportantComplaints from './pages/ImportantComplaints'
 import Login from './pages/Login'
+import CreateAccount from './pages/CreateAccount'
 
 export default function AppRoutes() {
   return (
     <Routes>
       <Route path="/" element={<Dashboard/>} />
+      <Route path="/create_account" element={<CreateAccount/>} />
       <Route path="/login" element={<Login/>} />
       <Route path="/complaint/:id" element={<PageComplaint/>} />
       <Route path="/graphics" element={<PageGraphics/>} />
