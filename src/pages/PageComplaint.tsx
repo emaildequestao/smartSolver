@@ -44,13 +44,27 @@ export default function PageComplaint() {
       .finally(() => setLoading(false));
   }, [idParam]);
 
-  if (loading) return <p>Carregando...</p>;
+  if (loading) {
+    return (
+      <div className="layout">
+        <div className="main-container">
+          <div className="loader">Sincronizando registro...</div>
+        </div>
+      </div>
+    );
+  }
 
   if (!reclamacao) {
     return (
-      <div>
-        <p>Reclamação não localizada</p>
-        <button onClick={() => navegacao(-1)}>⬅️</button>
+      <div className="layout">
+        <div className="main-container">
+          <div className="glass-card" style={{ textAlign: 'center' }}>
+            <p>Protocolo não localizado</p>
+            <button className="pag-btn" onClick={() => navegacao(-1)} style={{ marginTop: '20px' }}>
+              Voltar ao Dashboard
+            </button>
+          </div>
+        </div>
       </div>
     );
   }
