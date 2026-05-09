@@ -1,6 +1,7 @@
 import { useNavigate, useParams } from 'react-router-dom';
 import Complaint from './Complaint';
 import { useState, useEffect } from 'react';
+import '../styles/dashboard.css';
 
 const API_URL = import.meta.env.VITE_APP_API_URL || 'http://localhost:8000';
 
@@ -59,8 +60,8 @@ export default function PageComplaint() {
       <div className="layout">
         <div className="main-container">
           <div className="glass-card" style={{ textAlign: 'center' }}>
-            <p>Protocolo não localizado</p>
-            <button className="pag-btn" onClick={() => navegacao(-1)} style={{ marginTop: '20px' }}>
+            <p style={{ marginBottom: '20px' }}>Protocolo não localizado</p>
+            <button className="pag-btn" onClick={() => navegacao(-1)}>
               Voltar ao Dashboard
             </button>
           </div>
