@@ -1,4 +1,4 @@
-/* --- VARIÁVEIS TEMA --- */
+/* --- VARIÁVEIS TEMA (ESTILO ORIGINAL) --- */
 :root {
   --bg-deep: #0f172a;        
   --bg-card: #1e293b;        
@@ -12,11 +12,16 @@
   --ease: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
+/* --- RESET BÁSICO --- */
 * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
-body { background: var(--bg-deep); color: var(--text-main); overflow-x: hidden; }
+body { background: var(--bg-deep); color: var(--text-main); line-height: 1.5; }
 
-/* --- LAYOUT --- */
-.layout { display: flex; min-height: 100vh; }
+/* --- ESTRUTURA DE LAYOUT (DASHBOARD & RECLAMAÇÕES) --- */
+.layout { 
+  display: flex; 
+  min-height: 100vh; 
+  background: var(--bg-deep); 
+}
 
 .sidebar {
   width: 260px;
@@ -25,89 +30,199 @@ body { background: var(--bg-deep); color: var(--text-main); overflow-x: hidden; 
   border-right: 1px solid var(--border-ui);
   display: flex;
   flex-direction: column;
-  position: sticky;
-  top: 0;
-  height: 100vh;
+  flex-shrink: 0; /* Impede que a sidebar amasse */
 }
 
-.main-container { flex: 1; padding: 40px 60px; }
-
-/* --- SIDEBAR COMPONENTS --- */
-.sidebar-header { margin-bottom: 40px; display: flex; align-items: center; gap: 10px; }
-.logo-text { font-size: 1.5rem; font-weight: 800; color: white; }
-.corp-tag { background: var(--accent); font-size: 0.6rem; padding: 2px 6px; border-radius: 4px; }
-
-.nav-group label { color: var(--text-dim); font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1.5px; display: block; margin: 20px 0 10px; }
-
-.nav-item {
-  width: 100%; border: none; background: transparent; padding: 12px;
-  border-radius: 12px; color: var(--text-dim); display: flex; align-items: center;
-  gap: 12px; cursor: pointer; transition: var(--ease); font-weight: 500;
+.main-container { 
+  flex: 1; 
+  padding: 60px; 
+  background: var(--bg-deep); 
+  overflow-y: auto;
 }
 
-.nav-item:hover, .nav-item.active { background: var(--accent); color: white; }
-.nav-item.warning.active { background: var(--danger); color: white; }
+/* --- COMPONENTES DA SIDEBAR --- */
+.sidebar-header { margin-bottom: 50px; }
+.logo-text { 
+  font-size: 1.6rem; 
+  font-weight: 900; 
+  color: white; 
+  letter-spacing: -1px;
+}
 
-/* --- GRID DE RECLAMAÇÕES (CORREÇÃO DO ITEM ÚNICO) --- */
+.nav-group label { 
+  color: var(--text-dim); 
+  font-size: 0.7rem; 
+  text-transform: uppercase; 
+  letter-spacing: 2px; 
+  display: block; 
+  margin-bottom: 15px; 
+}
+
+.nav-item, .nav-group button {
+  width: 100%; border: none; background: transparent; padding: 14px;
+  border-radius: 15px; color: var(--text-dim); display: flex; align-items: center;
+  gap: 12px; cursor: pointer; transition: var(--ease); font-weight: 500; margin-bottom: 8px;
+  text-align: left;
+}
+
+.nav-item:hover, .nav-group button:hover {
+  background: var(--accent); 
+  color: white; 
+  transform: translateX(8px);
+}
+
+.nav-item.warning:hover {
+  background: var(--danger);
+  color: white;
+}
+
+/* --- CABEÇALHOS (GARANTE COR BRANCA) --- */
+.main-header { margin-bottom: 45px; }
+.main-header h1 { 
+  color: white !important; 
+  font-size: 2.2rem; 
+  font-weight: 800;
+}
+
+/* --- FILTROS E BANNERS --- */
+.filter-card {
+  background: var(--bg-card);
+  padding: 25px;
+  border-radius: var(--radius);
+  margin-bottom: 30px;
+  border: 1px solid var(--border-ui);
+}
+
+.search-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr;
+  gap: 20px;
+}
+
+.input-container {
+  position: relative;
+  background: rgba(0,0,0,0.2);
+  border-radius: 12px;
+  border: 1px solid var(--border-ui);
+  display: flex;
+  align-items: center;
+  padding: 0 15px;
+}
+
+.input-container input, .search-grid select {
+  background: transparent;
+  border: none;
+  color: white;
+  padding: 12px;
+  width: 100%;
+  outline: none;
+}
+
+/* --- GRID DE CARDS (REUTILIZÁVEL) --- */
 .complaints-grid {
   display: grid;
-  /* Garante que os cards tenham tamanho mínimo e máximo, criando colunas automaticamente */
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); 
-  gap: 24px;
-  margin-top: 20px;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 25px;
 }
 
-/* --- CARDS --- */
 .glass-card {
   background: var(--bg-card);
   border: 1px solid var(--border-ui);
   border-radius: var(--radius);
   padding: 24px;
-  display: flex;
-  flex-direction: column;
   transition: var(--ease);
-  min-height: 220px;
 }
 
-.glass-card:hover { transform: translateY(-5px); border-color: var(--accent); }
-
-/* --- FILTROS E DROPDOWNS --- */
-.search-grid select {
-  background: #0f172a; /* Fundo sólido para as opções aparecerem */
-  color: white;
-  border: 1px solid var(--border-ui);
-  padding: 12px;
-  border-radius: 10px;
-  cursor: pointer;
-  appearance: auto; /* Mantém a seta padrão do sistema para evitar bugs de clique */
-}
-
-.search-grid select option { background: var(--bg-card); color: white; }
-
-/* --- BANNER DE URGÊNCIA --- */
-.urgent-banner {
-  border-left: 4px solid var(--danger);
+.card-header {
   display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.category-pill {
+  background: var(--accent);
+  color: white;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.priority-indicator {
+  font-size: 0.75rem;
+  font-weight: bold;
+  color: var(--text-dim);
+}
+
+/* --- BOTÕES E PAGINAÇÃO --- */
+.pagination-bar {
+  display: flex;
+  justify-content: center;
   align-items: center;
   gap: 20px;
-  background: var(--bg-card);
-  padding: 20px;
-  border-radius: 15px;
-  margin-bottom: 30px;
+  margin-top: 40px;
 }
 
-.urgent-banner h3 { color: white; margin-bottom: 4px; }
-.urgent-banner p { color: var(--text-dim); font-size: 0.9rem; }
+.pag-btn {
+  background: var(--bg-card);
+  border: 1px solid var(--border-ui);
+  color: white;
+  padding: 10px 20px;
+  border-radius: 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--ease);
+}
 
-/* --- HEADER E BADGES --- */
-.main-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; }
-.user-badge { display: flex; align-items: center; gap: 8px; padding: 6px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; }
-.user-badge.danger { background: rgba(244, 63, 94, 0.1); color: var(--danger); border: 1px solid var(--danger); }
+.pag-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+.pag-btn:not(:disabled):hover { 
+  background: var(--accent); 
+  border-color: var(--accent); 
+}
 
-/* --- PAGINAÇÃO --- */
-.pagination-bar { display: flex; justify-content: center; align-items: center; gap: 15px; margin-top: 50px; }
-.pag-btn { background: var(--bg-card); border: 1px solid var(--border-ui); color: white; padding: 10px 18px; border-radius: 10px; cursor: pointer; display: flex; align-items: center; gap: 8px; }
-.pag-btn:hover:not(:disabled) { background: var(--accent); }
-.pag-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.action-btn {
+  width: 100%;
+  margin-top: 20px;
+  padding: 12px;
+  border-radius: 12px;
+  border: none;
+  background: var(--glass);
+  color: white;
+  cursor: pointer;
+  transition: var(--ease);
+  text-align: center;
+}
 
-.loader { width: 100%; text-align: center; padding: 50px; color: var(--text-dim); grid-column: 1 / -1; }
+.action-btn:hover { background: var(--accent); }
+
+/* --- FEEDBACK VISUAL (LOADER) --- */
+.loader { 
+  text-align: center; 
+  padding: 40px; 
+  color: var(--text-dim); 
+}
+
+/* --- ESPECÍFICOS DA PÁGINA DE DETALHES (IA) --- */
+.ai-section-label {
+  color: var(--accent);
+  font-weight: bold;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 1px;
+}
+
+.solution-box {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--border-ui);
+  padding: 25px;
+  border-radius: 15px;
+  margin-top: 20px;
+  line-height: 1.7;
+}
+
+/* Utilitário para cores de prioridade no texto */
+.p-5 { color: var(--danger) !important; }
+.p-4 { color: #fb923c !important; }
