@@ -33,9 +33,7 @@ const IMPORTANCIAS = [1, 2, 3, 4, 5];
 export default function Dashboard() {
   const navegar = useNavigate();
   
-  // 1. O sistema verifica se existe o token salvo no login
   const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem('token_smartsolver')); 
-  
   const [listaOriginal, setListaOriginal] = useState<Complaint[]>([]);
   const [loading, setLoading] = useState(false);
   
@@ -44,7 +42,6 @@ export default function Dashboard() {
   const [importancia, setImportancia] = useState('');
   const [busca, setBusca] = useState('');
 
-  // 2. Busca de dados enviando o Token de Autorização
   const fetchComplaints = async () => {
     const token = localStorage.getItem('token_smartsolver');
     if (!token) {
@@ -57,12 +54,12 @@ export default function Dashboard() {
       const res = await fetch(`${API_URL}/latest?n=100`, {
         method: 'GET',
         headers: {
-          'Authorization': `Bearer ${token}`, // Envia o carimbo para a API
+          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         }
       });
       
-      if (res.status === 401) { // Token expirado ou inválido
+      if (res.status === 401) {
         handleLogout();
         return;
       }
@@ -73,20 +70,18 @@ export default function Dashboard() {
       setListaOriginal(data.items || []);
       setIsLoggedIn(true);
     } catch (err) {
-      console.error("Erro de conexão corporativa:", err);
+      console.error("Erro de conexão:", err);
     } finally {
       setLoading(false);
     }
   };
 
-  // Sincroniza a autenticação ao carregar a página
   useEffect(() => {
     fetchComplaints();
   }, []);
 
-  // 3. Função de Logout Real
   const handleLogout = () => {
-    localStorage.removeItem('token_smartsolver'); // Remove o carimbo
+    localStorage.removeItem('token_smartsolver');
     setIsLoggedIn(false);
     setListaOriginal([]);
     navegar('/login');
@@ -120,7 +115,6 @@ export default function Dashboard() {
         <div className="sidebar-top">
           <div className="sidebar-header">
             <span className="logo-text">SmartSolver</span>
-            <span className="corp-tag">CORP</span>
           </div>
 
           <nav className="sidebar-nav">
@@ -181,7 +175,7 @@ export default function Dashboard() {
       <div className="main-container">
         <header className="main-header">
           <div className="header-info">
-            <h1>Protocolos Internos</h1>
+            <h1>Dashboard</h1>
             <p>{isLoggedIn ? 'Gestão de Reclamações Ativa' : 'Autenticação Necessária'}</p>
           </div>
           {isLoggedIn && (
@@ -199,7 +193,7 @@ export default function Dashboard() {
                 <Search size={18} className="icon-search" />
                 <input 
                   type="text" 
-                  placeholder={isLoggedIn ? "Pesquisar protocolos..." : "Painel Bloqueado"} 
+                  placeholder={isLoggedIn ? "Pesquisar reclamações..." : "Painel Bloqueado"} 
                   disabled={!isLoggedIn}
                   value={busca}
                   onChange={(e) => setBusca(e.target.value)}
@@ -231,7 +225,7 @@ export default function Dashboard() {
             ) : loading ? (
               <div className="loader">Sincronizando base de dados...</div>
             ) : itensExibidos.length === 0 ? (
-              <div className="loader">Nenhum protocolo encontrado.</div>
+              <div className="loader">Nenhuma reclamação encontrada.</div>
             ) : (
               itensExibidos.map((item) => (
                 <div key={item.id} className="glass-card">
