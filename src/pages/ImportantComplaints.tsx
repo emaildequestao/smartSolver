@@ -17,9 +17,8 @@ const PER_PAGE = 6;
 
 export default function ImportantComplaints() {
   const navegar = useNavigate();
-  const [isAuthorized, setIsAuthorized] = useState(false);
   const [lista, setLista] = useState<any[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
@@ -37,7 +36,6 @@ export default function ImportantComplaints() {
 
     setLoading(true);
     try {
-      // O parâmetro n=${PER_PAGE} garante que o backend envie até 6 itens
       const url = `${API_URL}/latest?importance=5&n=${PER_PAGE}&page=${page}`;
       const res = await fetch(url, {
         method: 'GET',
@@ -55,9 +53,8 @@ export default function ImportantComplaints() {
       const data = await res.json();
       setLista(data.items || []);
       setTotalPages(data.pages || 1);
-      setIsAuthorized(true);
     } catch (err) {
-      console.error("Erro ao buscar urgências:", err);
+      console.error("Erro ao carregar urgências:", err);
     } finally {
       setLoading(false);
     }
@@ -67,14 +64,12 @@ export default function ImportantComplaints() {
     fetchUrgentes(); 
   }, [page]);
 
-  if (!isAuthorized && !loading) return null;
-
   return (
     <div className="layout">
       <aside className="sidebar">
         <div className="sidebar-top">
           <div className="sidebar-header">
-            <span className="logo-text">SmartSolver <span className="corp-tag">CORP</span></span>
+            <span className="logo-text">SmartSolver</span>
           </div>
           <nav className="sidebar-nav">
             <div className="nav-group">
@@ -109,8 +104,8 @@ export default function ImportantComplaints() {
       <div className="main-container">
         <header className="main-header">
           <div className="header-info">
-            <h1>Reclamações Urgentes</h1>
-            <p>Protocolos Nível 5</p>
+            <h1>Urgentes</h1>
+            <p>Reclamações Nível 5</p>
           </div>
           <div className="user-badge danger">
             <ShieldAlert size={14} />
@@ -119,19 +114,22 @@ export default function ImportantComplaints() {
         </header>
 
         <main className="content-area">
-          <div className="filter-card" style={{ borderLeft: '4px solid var(--danger)', display: 'flex', alignItems: 'center', gap: '15px' }}>
-            <AlertCircle color="var(--danger)" size={24} />
-            <div>
-              <h3 style={{ color: 'white', fontSize: '1rem' }}>Fila de Prioridade Máxima</h3>
-              <p style={{ color: 'var(--text-dim)', fontSize: '0.85rem' }}>Visualizando apenas dados sensíveis com urgência máxima.</p>
+          <div className="filter-card urgency-banner">
+            <AlertCircle className="urgency-icon" size={24} />
+            <div className="urgency-text">
+              <h3>Fila de Prioridade Máxima</h3>
+              <p>Visualizando apenas reclamações sensíveis com urgência máxima.</p>
             </div>
           </div>
 
           <div className="complaints-grid">
             {loading ? (
-              <div className="loader">Sincronizando protocolos críticos...</div>
+              <div className="loader">Sincronizando reclamações...</div>
             ) : lista.length === 0 ? (
-              <div className="loader">Nenhum protocolo crítico pendente.</div>
+              <div className="empty-state">
+                <ShieldAlert size={48} opacity={0.2} />
+                <p>Nenhuma reclamação crítica pendente no momento.</p>
+              </div>
             ) : (
               lista.map((item) => (
                 <ImportantComplaint
@@ -145,13 +143,13 @@ export default function ImportantComplaints() {
             )}
           </div>
 
-          {totalPages > 1 && (
+          {!loading && totalPages > 1 && (
             <div className="pagination-bar">
-              <button className="pag-btn" onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1 || loading}>
+              <button className="pag-btn" onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1}>
                 <ChevronLeft size={20} />
               </button>
               <span className="page-count">Página {page} de {totalPages}</span>
-              <button className="pag-btn" onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page === totalPages || loading}>
+              <button className="pag-btn" onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page === totalPages}>
                 <ChevronRight size={20} />
               </button>
             </div>
