@@ -7,7 +7,6 @@ import {
   ChevronLeft, 
   ChevronRight,
   LogOut,
-  Lock,
   ShieldAlert
 } from 'lucide-react'; 
 import ImportantComplaint from '../components/ImportantComplaint';
@@ -24,7 +23,6 @@ export default function ImportantComplaints() {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
-  // Função de Logout
   const handleLogout = () => {
     localStorage.removeItem('token_smartsolver');
     navegar('/login');
@@ -32,8 +30,6 @@ export default function ImportantComplaints() {
 
   const fetchUrgentes = async () => {
     const token = localStorage.getItem('token_smartsolver');
-    
-    // Se não houver token, bloqueia e redireciona
     if (!token) {
       navegar('/login');
       return;
@@ -41,6 +37,7 @@ export default function ImportantComplaints() {
 
     setLoading(true);
     try {
+      // O parâmetro n=${PER_PAGE} garante que o backend envie até 6 itens
       const url = `${API_URL}/latest?importance=5&n=${PER_PAGE}&page=${page}`;
       const res = await fetch(url, {
         method: 'GET',
@@ -58,7 +55,7 @@ export default function ImportantComplaints() {
       const data = await res.json();
       setLista(data.items || []);
       setTotalPages(data.pages || 1);
-      setIsAuthorized(true); // Autoriza a exibição após sucesso
+      setIsAuthorized(true);
     } catch (err) {
       console.error("Erro ao buscar urgências:", err);
     } finally {
@@ -77,8 +74,7 @@ export default function ImportantComplaints() {
       <aside className="sidebar">
         <div className="sidebar-top">
           <div className="sidebar-header">
-            <span className="logo-text">SmartSolver</span>
-            <span className="corp-tag">CORP</span>
+            <span className="logo-text">SmartSolver <span className="corp-tag">CORP</span></span>
           </div>
           <nav className="sidebar-nav">
             <div className="nav-group">
@@ -151,21 +147,11 @@ export default function ImportantComplaints() {
 
           {totalPages > 1 && (
             <div className="pagination-bar">
-              <button 
-                className="pag-btn" 
-                onClick={() => setPage((p) => Math.max(1, p - 1))} 
-                disabled={page === 1 || loading}
-              >
+              <button className="pag-btn" onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1 || loading}>
                 <ChevronLeft size={20} />
               </button>
-              
               <span className="page-count">Página {page} de {totalPages}</span>
-              
-              <button 
-                className="pag-btn" 
-                onClick={() => setPage((p) => Math.min(totalPages, p + 1))} 
-                disabled={page === totalPages || loading}
-              >
+              <button className="pag-btn" onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page === totalPages || loading}>
                 <ChevronRight size={20} />
               </button>
             </div>
