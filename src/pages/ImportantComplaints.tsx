@@ -13,7 +13,7 @@ import ImportantComplaint from '../components/ImportantComplaint';
 import '../styles/dashboard.css'; 
 
 const API_URL = import.meta.env.VITE_APP_API_URL || 'http://localhost:8000';
-const PER_PAGE = 6;
+const PER_PAGE = 6; // Define que queremos 6 itens por página
 
 export default function ImportantComplaints() {
   const navegar = useNavigate();
@@ -23,7 +23,6 @@ export default function ImportantComplaints() {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
-  // Função de Logout
   const handleLogout = () => {
     localStorage.removeItem('token_smartsolver');
     navegar('/login');
@@ -32,7 +31,6 @@ export default function ImportantComplaints() {
   const fetchUrgentes = async () => {
     const token = localStorage.getItem('token_smartsolver');
     
-    // Se não houver token, bloqueia e redireciona
     if (!token) {
       navegar('/login');
       return;
@@ -40,7 +38,8 @@ export default function ImportantComplaints() {
 
     setLoading(true);
     try {
-      const url = `${API_URL}/latest?importance=5&n=${PER_PAGE}&page=${page}`;
+      // Ajuste na URL para garantir que pedimos a quantidade correta por página
+      const url = `${API_URL}/latest?importance=5&limit=${PER_PAGE}&page=${page}`;
       const res = await fetch(url, {
         method: 'GET',
         headers: {
@@ -55,9 +54,14 @@ export default function ImportantComplaints() {
       }
 
       const data = await res.json();
-      setLista(data.items || []);
-      setTotalPages(data.pages || 1);
-      setIsAuthorized(true); // Autoriza a exibição após sucesso
+      
+      // Mapeia os dados garantindo que o array de itens exista
+      const items = data.items || data || [];
+      setLista(Array.isArray(items) ? items : []);
+      
+      // Calcula o total de páginas baseado no retorno da API ou no tamanho da lista
+      setTotalPages(data.pages || Math.ceil((data.total || items.length) / PER_PAGE) || 1);
+      setIsAuthorized(true);
     } catch (err) {
       console.error("Erro ao buscar urgências:", err);
     } finally {
@@ -122,11 +126,11 @@ export default function ImportantComplaints() {
         </header>
 
         <main className="content-area">
-          <div className="filter-card" style={{ borderLeft: '4px solid var(--danger)', display: 'flex', alignItems: 'center', gap: '15px' }}>
+          <div className="filter-card urgent-banner">
             <AlertCircle color="var(--danger)" size={24} />
             <div>
-              <h3 style={{ color: 'white', fontSize: '1rem' }}>Fila de Prioridade Máxima</h3>
-              <p style={{ color: 'var(--text-dim)', fontSize: '0.85rem' }}>Visualizando apenas dados sensíveis com urgência máxima.</p>
+              <h3>Fila de Prioridade Máxima</h3>
+              <p>Visualizando apenas dados sensíveis com urgência máxima.</p>
             </div>
           </div>
 
@@ -140,7 +144,7 @@ export default function ImportantComplaints() {
                 <ImportantComplaint
                   key={item.id}
                   id={item.id}
-                  complaint_importance={item.importance || item.complaint_importance}
+                  complaint_importance={5} // Como é a página de urgentes, forçamos nível 5
                   complaint_title={item.complaint_title}
                   complaint_description={item.complaint_description}
                 />
@@ -155,17 +159,15 @@ export default function ImportantComplaints() {
                 onClick={() => setPage((p) => Math.max(1, p - 1))} 
                 disabled={page === 1 || loading}
               >
-                <ChevronLeft size={20} />
+                <ChevronLeft size={20} /> Anterior
               </button>
-              
               <span className="page-count">Página {page} de {totalPages}</span>
-              
               <button 
                 className="pag-btn" 
                 onClick={() => setPage((p) => Math.min(totalPages, p + 1))} 
                 disabled={page === totalPages || loading}
               >
-                <ChevronRight size={20} />
+                Próxima <ChevronRight size={20} />
               </button>
             </div>
           )}
