@@ -1,12 +1,19 @@
 import { useNavigate, useParams } from 'react-router-dom';
 import Complaint from './Complaint';
 import { useState, useEffect } from 'react';
-import { ArrowLeft, ShieldCheck, Lock } from 'lucide-react';
+import { ArrowLeft, ShieldCheck, Lock, Send, Trash2 } from 'lucide-react';
 import '../styles/pagecomplaint.css';
 
 const API_URL = import.meta.env.VITE_APP_API_URL || 'http://localhost:8000';
 
+type Comment = {
+  id: string;
+  comment_text: string;
+  created_at: string;
+};
+
 type Row = {
+  id: string;
   complaint_title: string;
   complaint_description: string;
   complaint_creation_date: string;
@@ -14,7 +21,7 @@ type Row = {
   complaint_category: string;
   complaint_importance: number;
   complaint_origin: string;
-  id: string;
+  comments?: Comment[]; // Assumindo que venham aqui ou em fetch separado
 };
 
 export default function PageComplaint() {
@@ -23,104 +30,136 @@ export default function PageComplaint() {
   const [reclamacao, setReclamacao] = useState<Row | null>(null);
   const [loading, setLoading] = useState(true);
   const [isAuthorized, setIsAuthorized] = useState(false);
+  
+  // Estados para a nova funcionalidade de comentários
+  const [comments, setComments] = useState<Comment[]>([]);
+  const [newComment, setNewComment] = useState('');
+  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    // 1. Verificação de Identidade Corporativa
     const token = localStorage.getItem('token_smartsolver');
-    
-    if (!token) {
-      navegacao('/login');
-      return;
-    }
-
+    if (!token) { navegacao('/login'); return; }
     if (!idParam) return;
 
-    // 2. Checagem de Cache (Opcional, mas mantida com segurança)
-    const cached = sessionStorage.getItem(`complaint_${idParam}`);
-    if (cached) {
-      setReclamacao(JSON.parse(cached));
-      setIsAuthorized(true);
-      setLoading(false);
-      return;
-    }
-
-    // 3. Busca Protegida com Header Authorization
     fetch(`${API_URL}/complaint/${idParam}`, {
-      method: 'GET',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
-      }
+      headers: { 'Authorization': `Bearer ${token}` }
     })
-      .then((res) => {
-        if (res.status === 401) {
-          localStorage.removeItem('token_smartsolver');
-          navegacao('/login');
-          return;
-        }
-        if (!res.ok) throw new Error('Não encontrado');
-        return res.json();
-      })
+      .then((res) => res.json())
       .then((data) => {
-        sessionStorage.setItem(`complaint_${idParam}`, JSON.stringify(data));
         setReclamacao(data);
+        setComments(data.comments || []); // Ajuste conforme seu retorno de API
         setIsAuthorized(true);
       })
       .catch(() => setReclamacao(null))
       .finally(() => setLoading(false));
   }, [idParam, navegacao]);
 
-  // Se não estiver autorizado, não renderiza o conteúdo
+  const handleAddComment = async () => {
+    if (!newComment.trim()) return;
+    setSubmitting(true);
+    const token = localStorage.getItem('token_smartsolver');
+
+    try {
+      const res = await fetch(`${API_URL}/comments_post`, {
+        method: 'POST',
+        headers: { 
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json' 
+        },
+        body: JSON.stringify({ complaint_id: idParam, text: newComment })
+      });
+      if (res.ok) {
+        const savedComment = await res.json();
+        setComments([...comments, savedComment]);
+        setNewComment('');
+      }
+    } catch (err) {
+      console.error("Erro ao postar comentário", err);
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleDeleteComment = async (commentId: string) => {
+    const token = localStorage.getItem('token_smartsolver');
+    try {
+      const res = await fetch(`${API_URL}/comments_delete`, {
+        method: 'DELETE',
+        headers: { 
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json' 
+        },
+        body: JSON.stringify({ comment_id: commentId })
+      });
+      if (res.ok) {
+        setComments(comments.filter(c => c.id !== commentId));
+      }
+    } catch (err) {
+      console.error("Erro ao deletar", err);
+    }
+  };
+
   if (!isAuthorized && !loading) return null;
-
-  if (loading) {
-    return (
-      <div className="layout">
-        <div className="main-container">
-          <div className="loader">Sincronizando registro seguro...</div>
-        </div>
-      </div>
-    );
-  }
-
-  if (!reclamacao) {
-    return (
-      <div className="layout">
-        <div className="main-container">
-          <header className="main-header" style={{ marginBottom: '30px' }}>
-            <button className="back-button" onClick={() => navegacao('/dashboard')} style={{ background: 'transparent', border: 'none', color: 'white', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <ArrowLeft size={20} />
-              <span>Voltar ao Dashboard</span>
-            </button>
-          </header>
-          <div className="glass-card" style={{ textAlign: 'center', padding: '40px' }}>
-            <Lock size={48} color="var(--text-dim)" style={{ marginBottom: '20px' }} />
-            <p style={{ marginBottom: '20px' }}>O protocolo solicitado não foi localizado ou você não possui permissão para acessá-lo.</p>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  if (loading) return <div className="layout"><div className="loader">Sincronizando...</div></div>;
+  if (!reclamacao) return <div className="layout"><div className="main-container">Erro ao carregar.</div></div>;
 
   return (
     <div className="layout">
-       {/* Barra superior de contexto para manter o padrão visual corporativo */}
-       <div style={{ position: 'absolute', top: '20px', right: '40px', display: 'flex', gap: '15px' }}>
+       <div className="context-badge-container">
           <div className="user-badge admin">
-            <ShieldCheck size={14} />
-            Análise em Curso
+            <ShieldCheck size={14} /> Análise em Curso
           </div>
        </div>
        
-       <Complaint
-          complaintTitle={reclamacao.complaint_title}
-          complaintText={reclamacao.complaint_description}
-          complaintsolution={reclamacao.complaint_solution}
-          complaintcategory={reclamacao.complaint_category}
-          complaintdate={reclamacao.complaint_creation_date}
-          complaintorigin={reclamacao.complaint_origin}
-          complaintimportance={reclamacao.complaint_importance}
-        />
+       <div className="main-container">
+          <button className="back-button-styled" onClick={() => navegacao('/dashboard')}>
+            <ArrowLeft size={20} /> Voltar
+          </button>
+
+          <Complaint
+            complaintTitle={reclamacao.complaint_title}
+            complaintText={reclamacao.complaint_description}
+            complaintsolution={reclamacao.complaint_solution}
+            complaintcategory={reclamacao.complaint_category}
+            complaintdate={reclamacao.complaint_creation_date}
+            complaintorigin={reclamacao.complaint_origin}
+            complaintimportance={reclamacao.complaint_importance}
+          />
+
+          {/* SEÇÃO DE RESPOSTAS PERSONALIZADAS */}
+          <section className="comments-section">
+            <h3 className="section-title">Respostas Internas</h3>
+            
+            <div className="comments-list">
+              {comments.map((c) => (
+                <div key={c.id} className="comment-item">
+                  <div className="comment-content">
+                    <p>{c.comment_text}</p>
+                    <span>{new Date(c.created_at).toLocaleDateString()}</span>
+                  </div>
+                  <button onClick={() => handleDeleteComment(c.id)} className="delete-btn">
+                    <Trash2 size={16} />
+                  </button>
+                </div>
+              ))}
+            </div>
+
+            <div className="comment-input-area">
+              <textarea 
+                placeholder="Escreva uma resposta personalizada..."
+                value={newComment}
+                onChange={(e) => setNewComment(e.target.value)}
+              />
+              <button 
+                onClick={handleAddComment} 
+                disabled={submitting}
+                className="send-btn"
+              >
+                {submitting ? 'Enviando...' : <><Send size={18} /> Enviar Resposta</>}
+              </button>
+            </div>
+          </section>
+       </div>
     </div>
   );
 }
