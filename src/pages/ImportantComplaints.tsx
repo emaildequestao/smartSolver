@@ -11,7 +11,7 @@ import {
   ShieldAlert
 } from 'lucide-react'; 
 import ImportantComplaint from '../components/ImportantComplaint';
-import '../styles/dashboard.css'; 
+import '../styles/important.css'; 
 
 const API_URL = import.meta.env.VITE_APP_API_URL || 'http://localhost:8000';
 const PER_PAGE = 6;
