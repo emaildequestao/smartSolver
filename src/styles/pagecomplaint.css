@@ -1,90 +1,69 @@
-/* --- SEÇÃO DE COMENTÁRIOS --- */
-.comments-section {
-  margin-top: 40px;
-  padding-bottom: 100px; /* Espaço para não colar no fim da página */
+/* Correção do Header e Botão Voltar */
+.back-button-styled {
+  background: transparent;
+  border: none;
+  color: var(--text-main);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  padding: 10px 0;
+  transition: var(--ease);
+  font-weight: 600;
 }
 
-.section-title {
-  font-size: 1.2rem;
-  color: var(--text-main);
-  margin-bottom: 20px;
+.back-button-styled:hover {
+  color: var(--accent);
+  transform: translateX(-5px);
+}
+
+/* Badge de Status no topo direito */
+.status-badge-wrapper {
+  position: absolute;
+  top: 30px;
+  right: 60px;
+  z-index: 10;
+}
+
+/* Estado de Erro */
+.error-state {
+  text-align: center;
+  padding: 60px !important;
+  color: var(--text-dim);
+}
+
+.error-state p { margin-top: 20px; }
+
+/* Ajustes de Espaçamento da Seção de Respostas */
+.comments-section {
+  margin-top: 50px;
+  max-width: 900px; /* Alinha com o card de Complaint */
 }
 
 .comment-item {
   background: var(--bg-card);
   border: 1px solid var(--border-ui);
-  padding: 15px 20px;
+  padding: 20px;
   border-radius: 15px;
-  margin-bottom: 12px;
+  margin-bottom: 15px;
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  animation: fadeIn 0.3s ease-out;
+  align-items: flex-start;
 }
 
-.comment-content p {
-  color: var(--text-main);
-  font-size: 0.95rem;
-}
-
-.comment-content span {
+.comment-content small {
+  display: block;
+  margin-top: 8px;
   color: var(--text-dim);
-  font-size: 0.75rem;
 }
 
-.delete-btn {
-  background: transparent;
-  border: none;
-  color: var(--text-dim);
-  cursor: pointer;
-  padding: 8px;
-  transition: var(--ease);
-}
-
-.delete-btn:hover { color: var(--danger); transform: scale(1.1); }
-
-/* --- INPUT DE TEXTO --- */
-.comment-input-area {
-  margin-top: 25px;
-  background: var(--bg-card);
-  border: 1px solid var(--border-ui);
-  border-radius: 15px;
-  padding: 15px;
+/* Loader Centralizado */
+.loader {
   display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.comment-input-area textarea {
-  background: rgba(0,0,0,0.2);
-  border: 1px solid var(--border-ui);
-  border-radius: 10px;
-  padding: 12px;
-  color: white;
-  resize: vertical;
-  min-height: 80px;
-  outline: none;
-}
-
-.send-btn {
-  align-self: flex-end;
-  background: var(--accent);
-  color: white;
-  border: none;
-  padding: 10px 20px;
-  border-radius: 10px;
-  display: flex;
+  justify-content: center;
   align-items: center;
-  gap: 8px;
-  cursor: pointer;
-  font-weight: 600;
-  transition: var(--ease);
-}
-
-.send-btn:hover:not(:disabled) { opacity: 0.9; transform: translateY(-2px); }
-.send-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+  height: 100vh;
+  width: 100%;
+  color: var(--accent);
+  font-weight: bold;
 }
