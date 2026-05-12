@@ -1,126 +1,155 @@
-/* Layout Principal */
+/* Layout Principal - Ocupa mais espaço na tela */
 .pg-complaint-wrapper {
     min-height: 100vh;
     width: 100%;
-    background: #0f172a; /* Fundo escuro profundo */
-    padding: 20px;
+    background: #0f172a; 
+    padding: 40px 20px; /* Mais respiro no topo e fundo */
     display: flex;
     justify-content: center;
     color: #f8fafc;
-    font-family: sans-serif;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    box-sizing: border-box;
 }
 
 .pg-container {
     width: 100%;
-    max-width: 850px;
+    max-width: 1200px; /* Aumentado para não ficar espremido */
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 30px;
 }
 
-/* Header */
+/* Header mais espaçado */
 .pg-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 10px 0;
+    width: 100%;
 }
 
 .pg-back-btn {
     background: rgba(255, 255, 255, 0.05);
     border: 1px solid rgba(255, 255, 255, 0.1);
     color: #cbd5e1;
-    padding: 8px 15px;
-    border-radius: 8px;
+    padding: 10px 20px;
+    border-radius: 12px;
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
     cursor: pointer;
-    transition: 0.2s;
+    transition: all 0.2s ease;
+    font-weight: 500;
 }
 
-.pg-back-btn:hover { background: rgba(255, 255, 255, 0.1); }
+.pg-back-btn:hover { 
+    background: rgba(255, 255, 255, 0.1);
+    transform: translateX(-5px);
+}
 
 .pg-badge-status {
     background: rgba(16, 185, 129, 0.1);
     color: #10b981;
-    border: 1px solid #10b981;
-    padding: 5px 12px;
-    border-radius: 20px;
-    font-size: 12px;
+    border: 1px solid rgba(16, 185, 129, 0.3);
+    padding: 8px 16px;
+    border-radius: 30px;
+    font-size: 0.85rem;
     display: flex;
     align-items: center;
-    gap: 5px;
+    gap: 8px;
+    font-weight: 600;
 }
 
-/* Seção de Comentários */
+/* Conteúdo Principal */
+.pg-content {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+    width: 100%;
+}
+
+/* Wrapper do card de reclamação para garantir que ele use 100% da largura do container */
+.pg-card-wrapper {
+    width: 100%;
+    background: rgba(30, 41, 59, 0.4);
+    border-radius: 24px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    overflow: hidden;
+}
+
+/* Seção de Comentários - Agora mais larga */
 .pg-comments-section {
-    background: rgba(30, 41, 59, 0.5);
+    background: rgba(30, 41, 59, 0.7);
+    backdrop-filter: blur(10px);
     border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 20px;
-    padding: 25px;
-    margin-top: 20px;
+    border-radius: 24px;
+    padding: 35px; /* Mais padding interno para luxo */
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
 }
 
 .pg-section-header {
     display: flex;
     align-items: center;
-    gap: 10px;
-    margin-bottom: 20px;
+    gap: 12px;
+    margin-bottom: 25px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding-bottom: 15px;
 }
 
 .pg-section-header h3 {
     margin: 0;
-    font-size: 1.1rem;
-    color: #f8fafc;
+    font-size: 1.25rem;
+    letter-spacing: -0.02em;
 }
 
 /* Lista de Comentários */
 .pg-comments-list {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    margin-bottom: 25px;
+    display: grid;
+    grid-template-columns: 1fr; /* Pode mudar para 1fr 1fr se quiser dois por linha em telas ultra-wide */
+    gap: 16px;
+    margin-bottom: 30px;
 }
 
 .pg-comment-card {
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    padding: 15px;
-    border-radius: 12px;
+    background: rgba(15, 23, 42, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    padding: 20px;
+    border-radius: 18px;
     display: flex;
     justify-content: space-between;
-    align-items: flex-start;
+    align-items: center;
+    transition: border-color 0.3s ease;
+}
+
+.pg-comment-card:hover {
+    border-color: #3b82f6;
 }
 
 .pg-comment-info p {
-    margin: 0 0 5px 0;
-    line-height: 1.5;
-    color: #e2e8f0;
+    margin: 0 0 8px 0;
+    line-height: 1.6;
+    color: #f1f5f9;
+    font-size: 1rem;
 }
 
 .pg-comment-info span {
-    font-size: 11px;
-    color: #64748b;
+    font-size: 0.75rem;
+    color: #94a3b8;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 2px 8px;
+    border-radius: 4px;
 }
 
-.pg-delete-btn {
-    background: transparent;
-    border: none;
-    color: #64748b;
-    cursor: pointer;
-    padding: 5px;
-    transition: 0.2s;
-}
-
-.pg-delete-btn:hover { color: #ef4444; }
-
-/* Input de Resposta */
+/* Área de Input - Grande e centralizada */
 .pg-input-wrapper {
-    background: rgba(15, 23, 42, 0.6);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 15px;
-    padding: 12px;
+    background: #0f172a;
+    border: 2px solid rgba(255, 255, 255, 0.05);
+    border-radius: 20px;
+    padding: 15px;
+    transition: border-color 0.3s ease;
+}
+
+.pg-input-wrapper:focus-within {
+    border-color: #3b82f6;
 }
 
 .pg-input-wrapper textarea {
@@ -130,9 +159,10 @@
     outline: none;
     color: white;
     resize: vertical;
-    min-height: 80px;
+    min-height: 120px;
     padding: 10px;
-    font-size: 14px;
+    font-size: 1rem;
+    line-height: 1.5;
 }
 
 .pg-input-actions {
@@ -140,41 +170,33 @@
     justify-content: space-between;
     align-items: center;
     border-top: 1px solid rgba(255, 255, 255, 0.05);
-    padding-top: 10px;
-    margin-top: 10px;
+    padding-top: 15px;
+    margin-top: 5px;
 }
-
-.pg-input-actions small { color: #64748b; }
 
 .pg-send-btn {
     background: #3b82f6;
     color: white;
     border: none;
-    padding: 8px 16px;
-    border-radius: 8px;
+    padding: 12px 28px;
+    border-radius: 12px;
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
     font-weight: 600;
+    font-size: 0.95rem;
     cursor: pointer;
+    transition: all 0.2s ease;
 }
 
-.pg-send-btn:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
+.pg-send-btn:hover:not(:disabled) {
+    background: #2563eb;
+    box-shadow: 0 0 20px rgba(59, 130, 246, 0.4);
 }
 
-/* Outros */
-.pg-empty-box {
-    text-align: center;
-    color: #64748b;
-    padding: 20px;
-    border: 1px dashed rgba(255, 255, 255, 0.1);
-    border-radius: 12px;
-}
-
-.pg-loader {
-    align-self: center;
-    margin-top: 100px;
-    color: #3b82f6;
+/* Mobile */
+@media (max-width: 768px) {
+    .pg-complaint-wrapper { padding: 15px; }
+    .pg-comments-section { padding: 20px; }
+    .pg-header { flex-direction: column; gap: 15px; align-items: flex-start; }
 }
