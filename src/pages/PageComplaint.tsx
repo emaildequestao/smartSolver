@@ -2,7 +2,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import Complaint from './Complaint';
 import { useState, useEffect } from 'react';
 import { ArrowLeft, ShieldCheck, Lock } from 'lucide-react';
-import '../styles/dashboard.css';
+import '../styles/pagecomplaint.css';
 
 const API_URL = import.meta.env.VITE_APP_API_URL || 'http://localhost:8000';
 
