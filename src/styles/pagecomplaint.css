@@ -1,69 +1,46 @@
-/* Correção do Header e Botão Voltar */
-.back-button-styled {
-  background: transparent;
-  border: none;
-  color: var(--text-main);
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  cursor: pointer;
-  padding: 10px 0;
-  transition: var(--ease);
-  font-weight: 600;
-}
-
-.back-button-styled:hover {
-  color: var(--accent);
-  transform: translateX(-5px);
-}
-
-/* Badge de Status no topo direito */
+/* Badge flutuante para não interferir no layout */
 .status-badge-wrapper {
-  position: absolute;
-  top: 30px;
-  right: 60px;
-  z-index: 10;
+  position: fixed;
+  top: 25px;
+  right: 40px;
+  z-index: 100;
 }
 
-/* Estado de Erro */
-.error-state {
-  text-align: center;
-  padding: 60px !important;
+.empty-msg {
   color: var(--text-dim);
+  font-style: italic;
+  font-size: 0.9rem;
+  margin-bottom: 15px;
 }
 
-.error-state p { margin-top: 20px; }
-
-/* Ajustes de Espaçamento da Seção de Respostas */
+/* Garante que a seção de comentários siga a largura do card acima */
 .comments-section {
-  margin-top: 50px;
-  max-width: 900px; /* Alinha com o card de Complaint */
+  margin-top: 30px;
+  padding: 0 10px;
 }
 
 .comment-item {
   background: var(--bg-card);
   border: 1px solid var(--border-ui);
-  padding: 20px;
+  padding: 18px;
   border-radius: 15px;
-  margin-bottom: 15px;
+  margin-bottom: 12px;
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
+  align-items: center;
+  transition: var(--ease);
+}
+
+.comment-item:hover {
+  border-color: var(--accent);
+}
+
+.comment-content p {
+  color: var(--text-main);
+  margin: 0;
 }
 
 .comment-content small {
-  display: block;
-  margin-top: 8px;
   color: var(--text-dim);
-}
-
-/* Loader Centralizado */
-.loader {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-  width: 100%;
-  color: var(--accent);
-  font-weight: bold;
+  font-size: 0.75rem;
 }
