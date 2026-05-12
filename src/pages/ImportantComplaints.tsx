@@ -1,177 +1,123 @@
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { 
-  BarChart3, 
-  LayoutDashboard, 
-  AlertCircle, 
-  ChevronLeft, 
-  ChevronRight,
-  LogOut,
-  ShieldAlert
-} from 'lucide-react'; 
-import ImportantComplaint from '../components/ImportantComplaint';
-import '../styles/dashboard.css'; 
+import { useState } from 'react';
+import { MessageSquare, Send, Trash2, Clock, AlertCircle } from 'lucide-react';
 
-const API_URL = import.meta.env.VITE_APP_API_URL || 'http://localhost:8000';
-const PER_PAGE = 6; // Define que queremos 6 itens por página
+interface Props {
+  id: string | number;
+  complaint_title: string;
+  complaint_description: string;
+  complaint_importance: number;
+  initial_response?: string;
+}
 
-export default function ImportantComplaints() {
-  const navegar = useNavigate();
-  const [isAuthorized, setIsAuthorized] = useState(false);
-  const [lista, setLista] = useState<any[]>([]);
+export default function ImportantComplaint({ 
+  id, 
+  complaint_title, 
+  complaint_description, 
+  initial_response 
+}: Props) {
+  const [reply, setReply] = useState(initial_response || '');
+  const [tempText, setTempText] = useState('');
   const [loading, setLoading] = useState(false);
-  const [page, setPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
+  const [isEditing, setIsEditing] = useState(!initial_response);
 
-  const handleLogout = () => {
-    localStorage.removeItem('token_smartsolver');
-    navegar('/login');
-  };
+  const API_URL = import.meta.env.VITE_APP_API_URL || 'http://localhost:8000';
+  const token = localStorage.getItem('token_smartsolver');
 
-  const fetchUrgentes = async () => {
-    const token = localStorage.getItem('token_smartsolver');
-    
-    if (!token) {
-      navegar('/login');
-      return;
-    }
-
+  // Enviar resposta para o banco
+  const handlePost = async () => {
+    if (!tempText.trim()) return;
     setLoading(true);
     try {
-      // Ajuste na URL para garantir que pedimos a quantidade correta por página
-      const url = `${API_URL}/latest?importance=5&limit=${PER_PAGE}&page=${page}`;
-      const res = await fetch(url, {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
+      const res = await fetch(`${API_URL}/coments_post`, {
+        method: 'POST',
+        headers: { 
+          'Authorization': `Bearer ${token}`, 
+          'Content-Type': 'application/json' 
+        },
+        body: JSON.stringify({ complaintId: id, comment: tempText })
       });
 
-      if (res.status === 401) {
-        handleLogout();
-        return;
+      if (res.ok) {
+        setReply(tempText);
+        setIsEditing(false);
+      } else {
+        alert("Erro ao salvar resposta.");
       }
-
-      const data = await res.json();
-      
-      // Mapeia os dados garantindo que o array de itens exista
-      const items = data.items || data || [];
-      setLista(Array.isArray(items) ? items : []);
-      
-      // Calcula o total de páginas baseado no retorno da API ou no tamanho da lista
-      setTotalPages(data.pages || Math.ceil((data.total || items.length) / PER_PAGE) || 1);
-      setIsAuthorized(true);
     } catch (err) {
-      console.error("Erro ao buscar urgências:", err);
+      console.error("Erro na requisição:", err);
     } finally {
       setLoading(false);
     }
   };
 
-  useEffect(() => { 
-    fetchUrgentes(); 
-  }, [page]);
+  // Remover resposta do banco
+  const handleRemove = async () => {
+    if (!window.confirm("Deseja apagar esta resposta definitivamente?")) return;
+    setLoading(true);
+    try {
+      const res = await fetch(`${API_URL}/coments_remove`, {
+        method: 'DELETE',
+        headers: { 
+          'Authorization': `Bearer ${token}`, 
+          'Content-Type': 'application/json' 
+        },
+        body: JSON.stringify({ complaintId: id })
+      });
 
-  if (!isAuthorized && !loading) return null;
+      if (res.ok) {
+        setReply('');
+        setTempText('');
+        setIsEditing(true);
+      }
+    } catch (err) {
+      console.error("Erro ao remover:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
-    <div className="layout">
-      <aside className="sidebar">
-        <div className="sidebar-top">
-          <div className="sidebar-header">
-            <span className="logo-text">SmartSolver</span>
-            <span className="corp-tag">CORP</span>
-          </div>
-          <nav className="sidebar-nav">
-            <div className="nav-group">
-              <label>Navegação</label>
-              <button className="nav-item" onClick={() => navegar('/dashboard')}>
-                <LayoutDashboard size={18} />
-                <span>Dashboard Geral</span>
-              </button>
-              <button className="nav-item" onClick={() => navegar('/graphics')}>
-                <BarChart3 size={18} />
-                <span>Gráficos Analíticos</span>
-              </button>
-            </div>
-            <div className="nav-group">
-              <label>Filtro Ativo</label>
-              <button className="nav-item warning active">
-                <AlertCircle size={18} />
-                <span>Urgentes</span>
-              </button>
-            </div>
-          </nav>
+    <div className="glass-card complaint-card-interactive">
+      <div className="card-top">
+        <div className="card-header-internal">
+          <span className="id-tag">PROTOCOL #{id}</span>
+          <div className="importance-dot" />
         </div>
+        <h3>{complaint_title}</h3>
+        <p className="description">{complaint_description}</p>
+      </div>
 
-        <div className="sidebar-footer">
-          <button className="nav-item logout-btn" onClick={handleLogout}>
-            <LogOut size={18} />
-            <span>Encerrar Sessão</span>
-          </button>
-        </div>
-      </aside>
-
-      <div className="main-container">
-        <header className="main-header">
-          <div className="header-info">
-            <h1>Reclamações Urgentes</h1>
-            <p>Protocolos Nível 5</p>
-          </div>
-          <div className="user-badge danger">
-            <ShieldAlert size={14} />
-            Acesso Crítico
-          </div>
-        </header>
-
-        <main className="content-area">
-          <div className="filter-card urgent-banner">
-            <AlertCircle color="var(--danger)" size={24} />
-            <div>
-              <h3>Fila de Prioridade Máxima</h3>
-              <p>Visualizando apenas dados sensíveis com urgência máxima.</p>
-            </div>
-          </div>
-
-          <div className="complaints-grid">
-            {loading ? (
-              <div className="loader">Sincronizando protocolos críticos...</div>
-            ) : lista.length === 0 ? (
-              <div className="loader">Nenhum protocolo crítico pendente.</div>
-            ) : (
-              lista.map((item) => (
-                <ImportantComplaint
-                  key={item.id}
-                  id={item.id}
-                  complaint_importance={5} // Como é a página de urgentes, forçamos nível 5
-                  complaint_title={item.complaint_title}
-                  complaint_description={item.complaint_description}
-                />
-              ))
-            )}
-          </div>
-
-          {totalPages > 1 && (
-            <div className="pagination-bar">
-              <button 
-                className="pag-btn" 
-                onClick={() => setPage((p) => Math.max(1, p - 1))} 
-                disabled={page === 1 || loading}
-              >
-                <ChevronLeft size={20} /> Anterior
-              </button>
-              <span className="page-count">Página {page} de {totalPages}</span>
-              <button 
-                className="pag-btn" 
-                onClick={() => setPage((p) => Math.min(totalPages, p + 1))} 
-                disabled={page === totalPages || loading}
-              >
-                Próxima <ChevronRight size={20} />
+      <div className="response-section">
+        {!isEditing && reply ? (
+          <div className="final-reply fade-in">
+            <div className="reply-header">
+              <span className="official-label">
+                <MessageSquare size={12} /> RESPOSTA ENVIADA
+              </span>
+              <button onClick={handleRemove} className="delete-reply" disabled={loading}>
+                <Trash2 size={14} />
               </button>
             </div>
-          )}
-        </main>
+            <p className="reply-content">{reply}</p>
+          </div>
+        ) : (
+          <div className="reply-input-area fade-in">
+            <textarea 
+              placeholder="Digite a tratativa oficial para este caso..."
+              value={tempText}
+              onChange={(e) => setTempText(e.target.value)}
+              disabled={loading}
+            />
+            <button 
+              onClick={handlePost} 
+              className="send-btn"
+              disabled={loading || !tempText.trim()}
+            >
+              {loading ? <Clock className="spin" size={16} /> : <Send size={16} />}
+              {loading ? 'Processando...' : 'Publicar Resposta'}
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
