@@ -1,6 +1,6 @@
 import { useNavigate, useParams } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-import { ArrowLeft, ShieldCheck, Lock, Send, Trash2 } from 'lucide-react';
+import { ShieldCheck, Lock, Send, Trash2 } from 'lucide-react';
 import Complaint from './Complaint';
 import '../styles/pagecomplaint.css';
 
@@ -80,7 +80,7 @@ export default function PageComplaint() {
 
   return (
     <div className="layout">
-      {/* Badge de Status Fixa */}
+      {/* Badge de Status no topo direito */}
       <div className="status-badge-wrapper">
         <div className="user-badge admin">
           <ShieldCheck size={14} /> Análise em Curso
@@ -88,17 +88,11 @@ export default function PageComplaint() {
       </div>
 
       <div className="main-container">
-        <header className="main-header">
-          <button className="back-button-styled" onClick={() => navegacao('/dashboard')}>
-            <ArrowLeft size={20} />
-            <span>Voltar ao Dashboard</span>
-          </button>
-        </header>
-
         {!reclamacao ? (
           <div className="glass-card error-state">
             <Lock size={48} />
             <p>Protocolo não localizado ou acesso negado.</p>
+            <button className="action-btn" onClick={() => navegacao('/dashboard')}>Voltar ao Dashboard</button>
           </div>
         ) : (
           <>
@@ -114,7 +108,9 @@ export default function PageComplaint() {
 
             <section className="comments-section">
               <h3 className="section-title">Respostas Personalizadas</h3>
+              
               <div className="comments-list">
+                {comments.length === 0 && <p className="empty-msg">Nenhuma resposta personalizada ainda.</p>}
                 {comments.map(c => (
                   <div key={c.id} className="comment-item">
                     <div className="comment-content">
@@ -134,12 +130,12 @@ export default function PageComplaint() {
                   value={newComment}
                   onChange={(e) => setNewComment(e.target.value)}
                 />
-                <button onClick={handleAddComment} disabled={submitting} className="send-btn">
+                <button onClick={handleAddComment} disabled={submitting || !newComment.trim()} className="send-btn">
                   <Send size={18} /> {submitting ? 'Enviando...' : 'Enviar Resposta'}
                 </button>
               </div>
-            </>
-          </section>
+            </section>
+          </>
         )}
       </div>
     </div>
