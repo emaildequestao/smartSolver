@@ -1,6 +1,6 @@
 import { useNavigate, useParams } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-import { ShieldCheck, Lock, Send, Trash2 } from 'lucide-react';
+import { ShieldCheck, Lock, Send, Trash2, ChevronLeft } from 'lucide-react';
 import Complaint from './Complaint';
 import '../styles/pagecomplaint.css';
 
@@ -76,26 +76,39 @@ export default function PageComplaint() {
     } catch (e) { console.error(e); }
   };
 
-  if (loading) return <div className="layout"><div className="loader">Carregando registro...</div></div>;
-
-  return (
-    <div className="layout">
-      {/* Badge de Status no topo direito */}
-      <div className="status-badge-wrapper">
-        <div className="user-badge admin">
-          <ShieldCheck size={14} /> Análise em Curso
+  if (loading) {
+    return (
+      <div className="complaint-page-layout">
+        <div className="loader-container">
+          <div className="loader-spinner"></div>
+          <span>Carregando registro...</span>
         </div>
       </div>
+    );
+  }
 
-      <div className="main-container">
+  return (
+    <div className="complaint-page-layout">
+      <header className="complaint-header">
+        <button className="back-button" onClick={() => navegacao('/dashboard')}>
+          <ChevronLeft size={20} /> Dashboard
+        </button>
+        <div className="status-indicator">
+          <ShieldCheck size={16} />
+          <span>Análise em Curso</span>
+        </div>
+      </header>
+
+      <main className="complaint-main-content">
         {!reclamacao ? (
-          <div className="glass-card error-state">
+          <div className="error-card">
             <Lock size={48} />
-            <p>Protocolo não localizado ou acesso negado.</p>
-            <button className="action-btn" onClick={() => navegacao('/dashboard')}>Voltar ao Dashboard</button>
+            <h2>Acesso Restrito</h2>
+            <p>Protocolo não localizado ou você não tem permissão para visualizá-lo.</p>
+            <button className="primary-btn" onClick={() => navegacao('/dashboard')}>Voltar</button>
           </div>
         ) : (
-          <>
+          <div className="content-wrapper">
             <Complaint
               complaintTitle={reclamacao.complaint_title}
               complaintText={reclamacao.complaint_description}
@@ -106,38 +119,63 @@ export default function PageComplaint() {
               complaintimportance={reclamacao.complaint_importance}
             />
 
-            <section className="comments-section">
-              <h3 className="section-title">Respostas Personalizadas</h3>
+            <section className="feedback-section">
+              <h3 className="section-headline">Respostas Técnicas</h3>
               
-              <div className="comments-list">
-                {comments.length === 0 && <p className="empty-msg">Nenhuma resposta personalizada ainda.</p>}
-                {comments.map(c => (
-                  <div key={c.id} className="comment-item">
-                    <div className="comment-content">
-                      <p>{c.comment_text}</p>
-                      <small>{new Date(c.created_at).toLocaleDateString()}</small>
-                    </div>
-                    <button onClick={() => handleDeleteComment(c.id)} className="delete-btn">
-                      <Trash2 size={18} />
-                    </button>
+              <div className="messages-container">
+                {comments.length === 0 ? (
+                  <div className="empty-state">
+                    <p>Ainda não há interações personalizadas neste protocolo.</p>
                   </div>
-                ))}
+                ) : (
+                  comments.map(c => (
+                    <div key={c.id} className="message-card">
+                      <div className="message-body">
+                        <p className="message-text">{c.comment_text}</p>
+                        <time className="message-date">
+                          {new Date(c.created_at).toLocaleDateString('pt-BR', {
+                            day: '2-digit', month: 'short', year: 'numeric'
+                          })}
+                        </time>
+                      </div>
+                      <button 
+                        onClick={() => handleDeleteComment(c.id)} 
+                        className="delete-icon-btn"
+                        title="Excluir resposta"
+                      >
+                        <Trash2 size={18} />
+                      </button>
+                    </div>
+                  ))
+                )}
               </div>
 
-              <div className="comment-input-area">
+              <div className="input-box-container">
                 <textarea 
-                  placeholder="Digite sua resposta técnica..."
+                  className="custom-textarea"
+                  placeholder="Escreva aqui o parecer técnico ou resposta ao cliente..."
                   value={newComment}
                   onChange={(e) => setNewComment(e.target.value)}
                 />
-                <button onClick={handleAddComment} disabled={submitting || !newComment.trim()} className="send-btn">
-                  <Send size={18} /> {submitting ? 'Enviando...' : 'Enviar Resposta'}
-                </button>
+                <div className="input-footer">
+                  <span className="char-count">{newComment.length} caracteres</span>
+                  <button 
+                    onClick={handleAddComment} 
+                    disabled={submitting || !newComment.trim()} 
+                    className="submit-button"
+                  >
+                    {submitting ? 'Enviando...' : (
+                      <>
+                        <Send size={18} /> Enviar Resposta
+                      </>
+                    )}
+                  </button>
+                </div>
               </div>
             </section>
-          </>
+          </div>
         )}
-      </div>
+      </main>
     </div>
   );
 }
