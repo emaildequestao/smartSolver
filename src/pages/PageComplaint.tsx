@@ -1,13 +1,12 @@
 import { useNavigate, useParams } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-import { ShieldCheck, Lock, Send, Trash2, ChevronLeft } from 'lucide-react';
+import { ShieldCheck, Lock, Send, Trash2, ChevronLeft, MessageSquare } from 'lucide-react';
 import Complaint from './Complaint';
 import '../styles/pagecomplaint.css';
 
 const API_URL = import.meta.env.VITE_APP_API_URL || 'http://localhost:8000';
 
 type Comment = { id: string; comment_text: string; created_at: string; };
-
 type Row = {
   id: string; complaint_title: string; complaint_description: string;
   complaint_creation_date: string; complaint_solution: string;
@@ -76,106 +75,93 @@ export default function PageComplaint() {
     } catch (e) { console.error(e); }
   };
 
-  if (loading) {
-    return (
-      <div className="complaint-page-layout">
-        <div className="loader-container">
-          <div className="loader-spinner"></div>
-          <span>Carregando registro...</span>
-        </div>
-      </div>
-    );
-  }
+  if (loading) return (
+    <div className="pg-complaint-wrapper">
+      <div className="pg-loader">Carregando protocolo...</div>
+    </div>
+  );
 
   return (
-    <div className="complaint-page-layout">
-      <header className="complaint-header">
-        <button className="back-button" onClick={() => navegacao('/dashboard')}>
-          <ChevronLeft size={20} /> Dashboard
-        </button>
-        <div className="status-indicator">
-          <ShieldCheck size={16} />
-          <span>Análise em Curso</span>
-        </div>
-      </header>
+    <div className="pg-complaint-wrapper">
+      <div className="pg-container">
+        
+        <header className="pg-header">
+          <button className="pg-back-btn" onClick={() => navegacao('/dashboard')}>
+            <ChevronLeft size={18} /> Painel Geral
+          </button>
+          <div className="pg-badge-status">
+            <ShieldCheck size={14} /> Análise em Curso
+          </div>
+        </header>
 
-      <main className="complaint-main-content">
         {!reclamacao ? (
-          <div className="error-card">
-            <Lock size={48} />
-            <h2>Acesso Restrito</h2>
-            <p>Protocolo não localizado ou você não tem permissão para visualizá-lo.</p>
-            <button className="primary-btn" onClick={() => navegacao('/dashboard')}>Voltar</button>
+          <div className="pg-error-card">
+            <Lock size={40} />
+            <p>Protocolo não encontrado.</p>
+            <button onClick={() => navegacao('/dashboard')}>Voltar</button>
           </div>
         ) : (
-          <div className="content-wrapper">
-            <Complaint
-              complaintTitle={reclamacao.complaint_title}
-              complaintText={reclamacao.complaint_description}
-              complaintsolution={reclamacao.complaint_solution}
-              complaintcategory={reclamacao.complaint_category}
-              complaintdate={reclamacao.complaint_creation_date}
-              complaintorigin={reclamacao.complaint_origin}
-              complaintimportance={reclamacao.complaint_importance}
-            />
+          <main className="pg-content">
+            {/* Componente de Reclamação */}
+            <div className="pg-card-wrapper">
+              <Complaint
+                complaintTitle={reclamacao.complaint_title}
+                complaintText={reclamacao.complaint_description}
+                complaintsolution={reclamacao.complaint_solution}
+                complaintcategory={reclamacao.complaint_category}
+                complaintdate={reclamacao.complaint_creation_date}
+                complaintorigin={reclamacao.complaint_origin}
+                complaintimportance={reclamacao.complaint_importance}
+              />
+            </div>
 
-            <section className="feedback-section">
-              <h3 className="section-headline">Respostas Técnicas</h3>
-              
-              <div className="messages-container">
+            {/* Seção de Respostas Técnicas */}
+            <section className="pg-comments-section">
+              <div className="pg-section-header">
+                <MessageSquare size={20} />
+                <h3>Respostas Técnicas Personalizadas</h3>
+              </div>
+
+              <div className="pg-comments-list">
                 {comments.length === 0 ? (
-                  <div className="empty-state">
-                    <p>Ainda não há interações personalizadas neste protocolo.</p>
-                  </div>
+                  <div className="pg-empty-box">Nenhuma resposta registrada.</div>
                 ) : (
                   comments.map(c => (
-                    <div key={c.id} className="message-card">
-                      <div className="message-body">
-                        <p className="message-text">{c.comment_text}</p>
-                        <time className="message-date">
-                          {new Date(c.created_at).toLocaleDateString('pt-BR', {
-                            day: '2-digit', month: 'short', year: 'numeric'
-                          })}
-                        </time>
+                    <div key={c.id} className="pg-comment-card">
+                      <div className="pg-comment-info">
+                        <p>{c.comment_text}</p>
+                        <span>{new Date(c.created_at).toLocaleDateString('pt-BR')}</span>
                       </div>
-                      <button 
-                        onClick={() => handleDeleteComment(c.id)} 
-                        className="delete-icon-btn"
-                        title="Excluir resposta"
-                      >
-                        <Trash2 size={18} />
+                      <button className="pg-delete-btn" onClick={() => handleDeleteComment(c.id)}>
+                        <Trash2 size={16} />
                       </button>
                     </div>
                   ))
                 )}
               </div>
 
-              <div className="input-box-container">
+              <div className="pg-input-wrapper">
                 <textarea 
-                  className="custom-textarea"
-                  placeholder="Escreva aqui o parecer técnico ou resposta ao cliente..."
+                  placeholder="Escreva sua análise técnica..."
                   value={newComment}
                   onChange={(e) => setNewComment(e.target.value)}
                 />
-                <div className="input-footer">
-                  <span className="char-count">{newComment.length} caracteres</span>
+                <div className="pg-input-actions">
+                  <small>{newComment.length} caracteres</small>
                   <button 
+                    className="pg-send-btn"
                     onClick={handleAddComment} 
-                    disabled={submitting || !newComment.trim()} 
-                    className="submit-button"
+                    disabled={submitting || !newComment.trim()}
                   >
-                    {submitting ? 'Enviando...' : (
-                      <>
-                        <Send size={18} /> Enviar Resposta
-                      </>
-                    )}
+                    <Send size={16} /> {submitting ? 'Enviando...' : 'Adicionar Resposta'}
                   </button>
                 </div>
               </div>
             </section>
-          </div>
+
+          </main>
         )}
-      </main>
+      </div>
     </div>
   );
 }
