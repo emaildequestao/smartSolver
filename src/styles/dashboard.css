@@ -1,4 +1,4 @@
-/* --- VARIÁVEIS TEMA (Mantidas) --- */
+/* --- VARIÁVEIS TEMA --- */
 :root {
   --bg-deep: #0f172a;        
   --bg-card: #1e293b;        
@@ -12,157 +12,102 @@
   --ease: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
-/* ... (seus estilos de layout anteriores) ... */
+* { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+body { background: var(--bg-deep); color: var(--text-main); overflow-x: hidden; }
 
-/* --- AJUSTE NO CARD PARA INTERAÇÃO --- */
-.complaint-card-interactive {
+/* --- LAYOUT --- */
+.layout { display: flex; min-height: 100vh; }
+
+.sidebar {
+  width: 260px;
+  background: #0a0f1d;
+  padding: 40px 24px;
+  border-right: 1px solid var(--border-ui);
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  min-height: 320px; /* Aumentado para comportar o form */
+  position: sticky;
+  top: 0;
+  height: 100vh;
 }
 
-.card-header-internal {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 12px;
+.main-container { flex: 1; padding: 40px 60px; }
+
+/* --- SIDEBAR COMPONENTS --- */
+.sidebar-header { margin-bottom: 40px; display: flex; align-items: center; gap: 10px; }
+.logo-text { font-size: 1.5rem; font-weight: 800; color: white; }
+.corp-tag { background: var(--accent); font-size: 0.6rem; padding: 2px 6px; border-radius: 4px; }
+
+.nav-group label { color: var(--text-dim); font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1.5px; display: block; margin: 20px 0 10px; }
+
+.nav-item {
+  width: 100%; border: none; background: transparent; padding: 12px;
+  border-radius: 12px; color: var(--text-dim); display: flex; align-items: center;
+  gap: 12px; cursor: pointer; transition: var(--ease); font-weight: 500;
 }
 
-.id-tag {
-  font-size: 0.65rem;
-  letter-spacing: 1px;
-  font-weight: 800;
-  color: var(--accent);
-  opacity: 0.8;
-}
+.nav-item:hover, .nav-item.active { background: var(--accent); color: white; }
+.nav-item.warning.active { background: var(--danger); color: white; }
 
-.importance-dot {
-  width: 8px;
-  height: 8px;
-  background: var(--danger);
-  border-radius: 50%;
-  box-shadow: 0 0 12px var(--danger);
-}
-
-.description {
-  font-size: 0.9rem;
-  color: var(--text-dim);
-  line-height: 1.5;
-  margin: 12px 0;
-}
-
-/* --- SEÇÃO DE RESPOSTA --- */
-.response-section {
+/* --- GRID DE RECLAMAÇÕES (CORREÇÃO DO ITEM ÚNICO) --- */
+.complaints-grid {
+  display: grid;
+  /* Garante que os cards tenham tamanho mínimo e máximo, criando colunas automaticamente */
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); 
+  gap: 24px;
   margin-top: 20px;
-  padding-top: 15px;
-  border-top: 1px solid var(--border-ui);
 }
 
-.reply-input-area textarea {
-  width: 100%;
-  background: var(--bg-deep);
+/* --- CARDS --- */
+.glass-card {
+  background: var(--bg-card);
   border: 1px solid var(--border-ui);
-  border-radius: 12px;
-  padding: 12px;
-  color: white;
-  font-size: 0.85rem;
-  resize: none;
-  height: 90px;
+  border-radius: var(--radius);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
   transition: var(--ease);
+  min-height: 220px;
 }
 
-.reply-input-area textarea:focus {
-  outline: none;
-  border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
-}
+.glass-card:hover { transform: translateY(-5px); border-color: var(--accent); }
 
-.send-btn {
-  margin-top: 10px;
-  width: 100%;
-  background: var(--accent);
+/* --- FILTROS E DROPDOWNS --- */
+.search-grid select {
+  background: #0f172a; /* Fundo sólido para as opções aparecerem */
   color: white;
-  border: none;
+  border: 1px solid var(--border-ui);
   padding: 12px;
-  border-radius: 12px;
+  border-radius: 10px;
   cursor: pointer;
+  appearance: auto; /* Mantém a seta padrão do sistema para evitar bugs de clique */
+}
+
+.search-grid select option { background: var(--bg-card); color: white; }
+
+/* --- BANNER DE URGÊNCIA --- */
+.urgent-banner {
+  border-left: 4px solid var(--danger);
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 10px;
-  font-weight: 700;
-  transition: var(--ease);
+  gap: 20px;
+  background: var(--bg-card);
+  padding: 20px;
+  border-radius: 15px;
+  margin-bottom: 30px;
 }
 
-.send-btn:hover:not(:disabled) {
-  transform: translateY(-2px);
-  filter: brightness(1.1);
-}
+.urgent-banner h3 { color: white; margin-bottom: 4px; }
+.urgent-banner p { color: var(--text-dim); font-size: 0.9rem; }
 
-.send-btn:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-}
+/* --- HEADER E BADGES --- */
+.main-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; }
+.user-badge { display: flex; align-items: center; gap: 8px; padding: 6px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; }
+.user-badge.danger { background: rgba(244, 63, 94, 0.1); color: var(--danger); border: 1px solid var(--danger); }
 
-/* --- CARD DE RESPOSTA PRONTA --- */
-.final-reply {
-  background: rgba(99, 102, 241, 0.05);
-  border: 1px solid rgba(99, 102, 241, 0.2);
-  padding: 15px;
-  border-radius: 14px;
-  position: relative;
-}
+/* --- PAGINAÇÃO --- */
+.pagination-bar { display: flex; justify-content: center; align-items: center; gap: 15px; margin-top: 50px; }
+.pag-btn { background: var(--bg-card); border: 1px solid var(--border-ui); color: white; padding: 10px 18px; border-radius: 10px; cursor: pointer; display: flex; align-items: center; gap: 8px; }
+.pag-btn:hover:not(:disabled) { background: var(--accent); }
+.pag-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
-.reply-header {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 10px;
-}
-
-.official-label {
-  font-size: 0.65rem;
-  font-weight: 900;
-  color: var(--accent);
-  display: flex;
-  align-items: center;
-  gap: 5px;
-}
-
-.reply-content {
-  font-size: 0.85rem;
-  color: var(--text-main);
-  font-style: italic;
-}
-
-.delete-reply {
-  background: transparent;
-  border: none;
-  color: var(--text-dim);
-  cursor: pointer;
-  transition: 0.2s;
-}
-
-.delete-reply:hover {
-  color: var(--danger);
-  transform: scale(1.1);
-}
-
-/* --- ANIMAÇÕES --- */
-.fade-in {
-  animation: fadeIn 0.4s ease-out forwards;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-.spin {
-  animation: rotate 1.2s linear infinite;
-}
-
-@keyframes rotate {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
+.loader { width: 100%; text-align: center; padding: 50px; color: var(--text-dim); grid-column: 1 / -1; }
