@@ -1,12 +1,19 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, LineChart, PieChart, BarChart3} from 'lucide-react';
+import { ArrowLeft, LineChart, PieChart, BarChart3, X, Maximize2 } from 'lucide-react';
 import LineC from '../components/Graphic_line';
 import Pie from '../components/Graphic_pie';
 import OriginBarChart from '../components/Graphic_bar';
 import '../styles/graphics.css';
 
-const GRAPHS = [
+interface GraphItem {
+  id: string;
+  title: string;
+  icon: React.ReactNode;
+  component: React.ReactNode;
+}
+
+const GRAPHS: GraphItem[] = [
   { 
     id: 'line',  
     title: 'Evolução Temporal',      
@@ -29,21 +36,20 @@ const GRAPHS = [
 
 export default function PageGraphics() {
   const navegar = useNavigate();
-  const [isAuthorized, setIsAuthorized] = useState(false);
+  const [isAuthorized, setIsAuthorized] = useState<boolean>(false);
+  // Estado para armazenar o gráfico atualmente expandido
+  const [activeGraph, setActiveGraph] = useState<GraphItem | null>(null);
 
   useEffect(() => {
-    // Verifica se o usuário está autenticado antes de mostrar os gráficos
     const token = localStorage.getItem('token_smartsolver');
     
     if (!token) {
-      // Se não houver token, manda para o login
       navegar('/login');
     } else {
       setIsAuthorized(true);
     }
   }, [navegar]);
 
-  // Enquanto verifica o token, não renderiza nada ou mostra um loader
   if (!isAuthorized) {
     return null; 
   }
@@ -62,19 +68,48 @@ export default function PageGraphics() {
       </header>
 
       <main className="graphics-main">
-        {GRAPHS.map(({ id, title, icon, component }) => (
-          <section key={id} className="graph-glass-card">
+        {GRAPHS.map((graph) => (
+          <section 
+            key={graph.id} 
+            className="graph-glass-card"
+            onClick={() => setActiveGraph(graph)}
+          >
             <div className="graph-card-header">
-              <span className="graph-icon-wrapper">{icon}</span>
-              <h3 className="graph-card-title">{title}</h3>
+              <div className="header-left">
+                <span className="graph-icon-wrapper">{graph.icon}</span>
+                <h3 className="graph-card-title">{graph.title}</h3>
+              </div>
+              <span className="expand-hint">
+                <Maximize2 size={14} />
+              </span>
             </div>
             <div className="graph-card-body">
-              {/* Passamos o token como prop para os componentes de gráfico caso eles precisem fazer fetch */}
-              {component}
+              {graph.component}
             </div>
           </section>
         ))}
       </main>
+
+      {/* Modal de Visualização Expandida */}
+      {activeGraph && (
+        <div className="modal-overlay" onClick={() => setActiveGraph(null)}>
+          <div className="modal-container" onClick={(e) => e.stopPropagation()}>
+            <header className="modal-header">
+              <div className="modal-title-group">
+                <span className="graph-icon-wrapper">{activeGraph.icon}</span>
+                <h2>{activeGraph.title}</h2>
+              </div>
+              <button className="close-button" onClick={() => setActiveGraph(null)}>
+                <X size={20} />
+                <span>Fechar</span>
+              </button>
+            </header>
+            <div className="modal-body">
+              {activeGraph.component}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
