@@ -8,7 +8,7 @@ const API_URL = import.meta.env.VITE_APP_API_URL || 'http://localhost:8000';
 
 type Comment = { 
   id: string; 
-  comment_text: string; 
+  text: string; 
   created_at: string; 
 };
 
@@ -182,7 +182,7 @@ export default function PageComplaint() {
                   comments.map(c => (
                     <div key={c.id} className="pg-comment-card">
                       <div className="pg-comment-info">
-                        <p>{c.comment_text}</p>
+                        <p>{c.text}</p>
                         <span>{new Date(c.created_at).toLocaleDateString('pt-BR')}</span>
                       </div>
                       <button className="pg-delete-btn" onClick={() => handleDeleteComment(c.id)}>
