@@ -6,12 +6,22 @@ import '../styles/pagecomplaint.css';
 
 const API_URL = import.meta.env.VITE_APP_API_URL || 'http://localhost:8000';
 
-type Comment = { id: string; text: string; author_email: string; created_at: string; };
+type Comment = { 
+  id: string; 
+  comment_text: string; 
+  created_at: string; 
+};
+
 type Row = {
-  id: string; complaint_title: string; complaint_description: string;
-  complaint_creation_date: string; complaint_solution: string;
-  complaint_category: string; complaint_importance: number;
-  complaint_origin: string; comments?: Comment[];
+  id: string; 
+  complaint_title: string; 
+  complaint_description: string;
+  complaint_creation_date: string; 
+  complaint_solution: string;
+  complaint_category: string; 
+  complaint_importance: number;
+  complaint_origin: string; 
+  comments?: Comment[];
 };
 
 export default function PageComplaint() {
@@ -25,19 +35,47 @@ export default function PageComplaint() {
 
   useEffect(() => {
     const token = localStorage.getItem('token_smartsolver');
-    if (!token) { navegacao('/login'); return; }
+    if (!token) { 
+      navegacao('/login'); 
+      return; 
+    }
     if (!idParam) return;
 
-    fetch(`${API_URL}/complaint/${idParam}`, {
-      headers: { 'Authorization': `Bearer ${token}` }
+    setLoading(true);
+
+    // Executa as buscas da reclamação e dos comentários armazenados em paralelo
+    Promise.all([
+      // 1. Busca os detalhes da reclamação específica
+      fetch(`${API_URL}/complaint/${idParam}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      }).then(res => res.ok ? res.json() : Promise.reject('Erro ao buscar reclamação')),
+
+      // 2. Busca e resgata as respostas técnicas vinculadas a este ID no banco
+      fetch(`${API_URL}/comments_get?complaint_id=${idParam}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      }).then(res => res.ok ? res.json() : []) // Retorna array vazio se não houver comentários ou a rota falhar
+    ])
+    .then(([dataComplaint, dataComments]) => {
+      setReclamacao(dataComplaint);
+      // Mescla comentários que possam vir embutidos com os buscados diretamente do banco
+      const bancoComments = dataComments || [];
+      const embutidosComments = dataComplaint.comments || [];
+      
+      // Remove duplicados por ID caso o backend retorne o mesmo dado em ambas as fontes
+      const todosComments = [...bancoComments, ...embutidosComments];
+      const filtrados = todosComments.filter((c, index, self) =>
+        index === self.findIndex((t) => t.id === c.id)
+      );
+
+      setComments(filtrados);
     })
-      .then(res => res.ok ? res.json() : Promise.reject())
-      .then(data => {
-        setReclamacao(data);
-        setComments(data.comments || []);
-      })
-      .catch(() => setReclamacao(null))
-      .finally(() => setLoading(false));
+    .catch((err) => {
+      console.error(err);
+      setReclamacao(null);
+    })
+    .finally(() => {
+      setLoading(false);
+    });
   }, [idParam, navegacao]);
 
   const handleAddComment = async () => {
@@ -54,10 +92,18 @@ export default function PageComplaint() {
       });
       if (res.ok) {
         const saved = await res.json();
+        // Adiciona a nova resposta salva no banco diretamente ao estado local
         setComments([...comments, saved]);
         setNewComment('');
+      } else {
+        alert("Não foi possível salvar sua resposta técnica no servidor.");
       }
-    } catch (e) { console.error(e); } finally { setSubmitting(false); }
+    } catch (e) { 
+      console.error(e); 
+      alert("Erro de conexão ao tentar salvar o comentário.");
+    } finally { 
+      setSubmitting(false); 
+    }
   };
 
   const handleDeleteComment = async (id: string) => {
@@ -71,8 +117,15 @@ export default function PageComplaint() {
         },
         body: JSON.stringify({ comment_id: id })
       });
-      if (res.ok) setComments(comments.filter(c => c.id !== id));
-    } catch (e) { console.error(e); }
+      if (res.ok) {
+        setComments(comments.filter(c => c.id !== id));
+      } else {
+        alert("Não foi possível excluir a resposta do banco de dados.");
+      }
+    } catch (e) { 
+      console.error(e); 
+      alert("Erro de conexão ao tentar deletar o comentário.");
+    }
   };
 
   if (loading) return (
@@ -97,7 +150,7 @@ export default function PageComplaint() {
         {!reclamacao ? (
           <div className="pg-error-card">
             <Lock size={40} />
-            <p>Protocolo não encontrado.</p>
+            <p>Protocolo não encontrado ou sem autorização de acesso.</p>
             <button onClick={() => navegacao('/dashboard')}>Voltar</button>
           </div>
         ) : (
@@ -124,12 +177,12 @@ export default function PageComplaint() {
 
               <div className="pg-comments-list">
                 {comments.length === 0 ? (
-                  <div className="pg-empty-box">Nenhuma resposta registrada.</div>
+                  <div className="pg-empty-box">Nenhuma resposta registrada no banco.</div>
                 ) : (
                   comments.map(c => (
                     <div key={c.id} className="pg-comment-card">
                       <div className="pg-comment-info">
-                        <p>{c.text}</p>
+                        <p>{c.comment_text}</p>
                         <span>{new Date(c.created_at).toLocaleDateString('pt-BR')}</span>
                       </div>
                       <button className="pg-delete-btn" onClick={() => handleDeleteComment(c.id)}>
@@ -145,6 +198,7 @@ export default function PageComplaint() {
                   placeholder="Escreva sua análise técnica..."
                   value={newComment}
                   onChange={(e) => setNewComment(e.target.value)}
+                  aria-label="Escreva sua análise técnica"
                 />
                 <div className="pg-input-actions">
                   <small>{newComment.length} caracteres</small>
