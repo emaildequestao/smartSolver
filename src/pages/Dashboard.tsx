@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { 
   BarChart3, 
   AlertCircle, 
-  CheckCircle, 
+  CheckCircle, // Ícone importado para a nova opção de resolvidos
   Search, 
   LogOut, 
   LogIn, 
@@ -157,10 +157,10 @@ export default function Dashboard() {
                 {!isLoggedIn && <Lock size={12} className="lock-icon" />}
               </button>
 
+              {/* INTEGRADO: Botão de Resolvidos com restrição de login e a classe "success" para o hover verde */}
               <button 
-                className={`nav-item ${!isLoggedIn ? 'disabled-nav' : ''}`}
+                className={`nav-item success ${!isLoggedIn ? 'disabled-nav' : ''}`}
                 onClick={() => isLoggedIn && navegar('/solved_complaints')}
-                style={{ color: isLoggedIn ? '#10b981' : 'var(--text-dim)' }}
               >
                 <CheckCircle size={18} />
                 <span>Resolvidos</span>
