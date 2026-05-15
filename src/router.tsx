@@ -5,7 +5,7 @@ import PageGraphics from './pages/PageGraphics'
 import ImportantComplaints from './pages/ImportantComplaints'
 import Login from './pages/Login'
 import CreateAccount from './pages/CreateAccount'
-import CreateAccount from './pages/Solved_Complaints'
+import Solved_Complaints from './pages/solved_somplaints'
 
 export default function AppRoutes() {
   return (
