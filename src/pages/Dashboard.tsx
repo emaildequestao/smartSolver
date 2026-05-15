@@ -98,7 +98,9 @@ export default function Dashboard() {
         item.complaint_description.toLowerCase().includes(termo)
       );
     }
-    if (categoria) resultado = resultado.filter(item => item.complaint_category === categoria);
+    if (categoria) resultado = resultado.filter(item =>
+    item.complaint_category?.normalize('NFC') === categoria.normalize('NFC')
+    );
     if (importancia) resultado = resultado.filter(item => item.complaint_importance.toString() === importancia);
     
     return resultado;

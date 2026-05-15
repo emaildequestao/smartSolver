@@ -3,7 +3,7 @@
     min-height: 100vh;
     width: 100%;
     background: #0f172a; 
-    padding: 40px 20px; /* Mais respiro no topo e fundo */
+    padding: 40px 20px;
     display: flex;
     justify-content: center;
     color: #f8fafc;
@@ -13,13 +13,13 @@
 
 .pg-container {
     width: 100%;
-    max-width: 1200px; /* Aumentado para não ficar espremido */
+    max-width: 1200px;
     display: flex;
     flex-direction: column;
     gap: 30px;
 }
 
-/* Header mais espaçado */
+/* Header */
 .pg-header {
     display: flex;
     justify-content: space-between;
@@ -67,7 +67,7 @@
     width: 100%;
 }
 
-/* Wrapper do card de reclamação para garantir que ele use 100% da largura do container */
+/* Card de Reclamação */
 .pg-card-wrapper {
     width: 100%;
     background: rgba(30, 41, 59, 0.4);
@@ -76,13 +76,13 @@
     overflow: hidden;
 }
 
-/* Seção de Comentários - Agora mais larga */
+/* Seção de Comentários */
 .pg-comments-section {
     background: rgba(30, 41, 59, 0.7);
     backdrop-filter: blur(10px);
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 24px;
-    padding: 35px; /* Mais padding interno para luxo */
+    padding: 35px;
     box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
 }
 
@@ -104,7 +104,7 @@
 /* Lista de Comentários */
 .pg-comments-list {
     display: grid;
-    grid-template-columns: 1fr; /* Pode mudar para 1fr 1fr se quiser dois por linha em telas ultra-wide */
+    grid-template-columns: 1fr;
     gap: 16px;
     margin-bottom: 30px;
 }
@@ -116,30 +116,72 @@
     border-radius: 18px;
     display: flex;
     justify-content: space-between;
-    align-items: center;
+    align-items: flex-start; /* Alinhamento ao topo melhora leitura */
+    gap: 24px;
     transition: border-color 0.3s ease;
 }
 
 .pg-comment-card:hover {
-    border-color: #3b82f6;
+    border-color: rgba(59, 130, 246, 0.5);
+}
+
+.pg-comment-info {
+    flex: 1;
 }
 
 .pg-comment-info p {
-    margin: 0 0 8px 0;
+    margin: 0 0 12px 0;
     line-height: 1.6;
     color: #f1f5f9;
     font-size: 1rem;
+    word-break: break-word;
 }
 
 .pg-comment-info span {
     font-size: 0.75rem;
     color: #94a3b8;
-    background: rgba(255, 255, 255, 0.05);
-    padding: 2px 8px;
-    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    padding: 4px 10px;
+    border-radius: 6px;
 }
 
-/* Área de Input - Grande e centralizada */
+/* Ícone de Lixeira Premium e Integrado à Estética */
+.pg-delete-btn {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    color: #64748b;
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    align-self: flex-start; /* Mantém no topo junto do início do texto */
+    margin-top: 2px;
+}
+
+.pg-delete-btn:hover {
+    color: #ef4444;
+    background: rgba(239, 68, 68, 0.1);
+    border-color: rgba(239, 68, 68, 0.2);
+    box-shadow: 0 0 15px rgba(239, 68, 68, 0.15);
+    transform: scale(1.05);
+}
+
+/* Estado Vazio */
+.pg-empty-box {
+    text-align: center;
+    padding: 40px;
+    color: #94a3b8;
+    background: rgba(15, 23, 42, 0.2);
+    border-radius: 14px;
+    border: 1px dashed rgba(255, 255, 255, 0.05);
+}
+
+/* Área de Entrada de Texto */
 .pg-input-wrapper {
     background: #0f172a;
     border: 2px solid rgba(255, 255, 255, 0.05);
@@ -163,6 +205,7 @@
     padding: 10px;
     font-size: 1rem;
     line-height: 1.5;
+    box-sizing: border-box;
 }
 
 .pg-input-actions {
@@ -172,6 +215,10 @@
     border-top: 1px solid rgba(255, 255, 255, 0.05);
     padding-top: 15px;
     margin-top: 5px;
+}
+
+.pg-input-actions small {
+    color: #64748b;
 }
 
 .pg-send-btn {
@@ -194,9 +241,27 @@
     box-shadow: 0 0 20px rgba(59, 130, 246, 0.4);
 }
 
+.pg-send-btn:disabled {
+    background: #1e293b;
+    color: #64748b;
+    cursor: not-allowed;
+}
+
 /* Mobile */
 @media (max-width: 768px) {
-    .pg-complaint-wrapper { padding: 15px; }
-    .pg-comments-section { padding: 20px; }
-    .pg-header { flex-direction: column; gap: 15px; align-items: flex-start; }
+    .pg-complaint-wrapper { 
+        padding: 15px 10px; 
+    }
+    .pg-comments-section { 
+        padding: 20px; 
+    }
+    .pg-header { 
+        flex-direction: column; 
+        gap: 12px; 
+        align-items: flex-start; 
+    }
+    .pg-back-btn, .pg-badge-status {
+        width: max-content;
+    }
 }
+

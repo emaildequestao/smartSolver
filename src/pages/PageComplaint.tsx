@@ -27,6 +27,7 @@ type Row = {
 export default function PageComplaint() {
   const navegacao = useNavigate();
   const { id: idParam } = useParams<{ id: string }>();
+  
   const [reclamacao, setReclamacao] = useState<Row | null>(null);
   const [loading, setLoading] = useState(true);
   const [comments, setComments] = useState<Comment[]>([]);
@@ -43,25 +44,21 @@ export default function PageComplaint() {
 
     setLoading(true);
 
-    // Executa as buscas da reclamação e dos comentários armazenados em paralelo
     Promise.all([
-      // 1. Busca os detalhes da reclamação específica
       fetch(`${API_URL}/complaint/${idParam}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       }).then(res => res.ok ? res.json() : Promise.reject('Erro ao buscar reclamação')),
 
-      // 2. Busca e resgata as respostas técnicas vinculadas a este ID no banco
       fetch(`${API_URL}/comments_get?complaint_id=${idParam}`, {
         headers: { 'Authorization': `Bearer ${token}` }
-      }).then(res => res.ok ? res.json() : []) // Retorna array vazio se não houver comentários ou a rota falhar
+      }).then(res => res.ok ? res.json() : [])
     ])
     .then(([dataComplaint, dataComments]) => {
       setReclamacao(dataComplaint);
-      // Mescla comentários que possam vir embutidos com os buscados diretamente do banco
-      const bancoComments = dataComments || [];
-      const embutidosComments = dataComplaint.comments || [];
       
-      // Remove duplicados por ID caso o backend retorne o mesmo dado em ambas as fontes
+      const bancoComments: Comment[] = dataComments || [];
+      const embutidosComments: Comment[] = dataComplaint.comments || [];
+      
       const todosComments = [...bancoComments, ...embutidosComments];
       const filtrados = todosComments.filter((c, index, self) =>
         index === self.findIndex((t) => t.id === c.id)
@@ -79,7 +76,7 @@ export default function PageComplaint() {
   }, [idParam, navegacao]);
 
   const handleAddComment = async () => {
-    if (!newComment.trim()) return;
+    if (!newComment.trim() || !idParam) return;
     setSubmitting(true);
     try {
       const res = await fetch(`${API_URL}/comments_post`, {
@@ -92,8 +89,7 @@ export default function PageComplaint() {
       });
       if (res.ok) {
         const saved = await res.json();
-        // Adiciona a nova resposta salva no banco diretamente ao estado local
-        setComments([...comments, saved]);
+        setComments(prev => [...prev, saved]);
         setNewComment('');
       } else {
         alert("Não foi possível salvar sua resposta técnica no servidor.");
@@ -118,7 +114,7 @@ export default function PageComplaint() {
         body: JSON.stringify({ comment_id: id })
       });
       if (res.ok) {
-        setComments(comments.filter(c => c.id !== id));
+        setComments(prev => prev.filter(c => c.id !== id));
       } else {
         alert("Não foi possível excluir a resposta do banco de dados.");
       }
@@ -128,11 +124,13 @@ export default function PageComplaint() {
     }
   };
 
-  if (loading) return (
-    <div className="pg-complaint-wrapper">
-      <div className="pg-loader">Carregando protocolo...</div>
-    </div>
-  );
+  if (loading) {
+    return (
+      <div className="pg-complaint-wrapper">
+        <div className="pg-loader">Carregando protocolo...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="pg-complaint-wrapper">
@@ -155,7 +153,6 @@ export default function PageComplaint() {
           </div>
         ) : (
           <main className="pg-content">
-            {/* Componente de Reclamação */}
             <div className="pg-card-wrapper">
               <Complaint
                 complaintTitle={reclamacao.complaint_title}
@@ -168,7 +165,6 @@ export default function PageComplaint() {
               />
             </div>
 
-            {/* Seção de Respostas Técnicas */}
             <section className="pg-comments-section">
               <div className="pg-section-header">
                 <MessageSquare size={20} />
@@ -182,11 +178,15 @@ export default function PageComplaint() {
                   comments.map(c => (
                     <div key={c.id} className="pg-comment-card">
                       <div className="pg-comment-info">
-                        <p>{c.text}</p>
+                        <p>{c.text}</p> 
                         <span>{new Date(c.created_at).toLocaleDateString('pt-BR')}</span>
                       </div>
-                      <button className="pg-delete-btn" onClick={() => handleDeleteComment(c.id)}>
-                        <Trash2 size={16} />
+                      <button 
+                        className="pg-delete-btn" 
+                        onClick={() => handleDeleteComment(c.id)}
+                        aria-label="Excluir resposta técnica"
+                      >
+                        <Trash2 size={15} />
                       </button>
                     </div>
                   ))
