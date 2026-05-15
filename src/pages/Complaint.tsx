@@ -156,7 +156,7 @@ export default function Complaint({
                   disabled={statusLoading}
                   style={{ width: '100%', marginTop: '5px' }}
                 >
-                  {statusLoading ? 'Atualizando...' : `Mudar para ${complaintStatus ? 'Pendente' : 'Resolvido'}`}
+                  {statusLoading ? 'Atualizando...' : `Marcar como ${complaintStatus ? 'Pendente' : 'Resolvido'}`}
                 </button>
               </div>
             </div>

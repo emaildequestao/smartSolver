@@ -36,8 +36,7 @@ export default function ImportantComplaints() {
 
     setLoading(true);
     try {
-      const url = `${API_URL}/latest?importance=5&n=${PER_PAGE}&page=${page}`;
-      const res = await fetch(url, {
+      const res = await fetch(`${API_URL}/latest?n=100`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -51,8 +50,11 @@ export default function ImportantComplaints() {
       }
 
       const data = await res.json();
-      setLista(data.items || []);
-      setTotalPages(data.pages || 1);
+      const urgentes = (data.items || []).filter((item: any) =>
+        (item.complaint_importance || item.importance) === 5
+      );
+      setLista(urgentes);
+      setTotalPages(Math.ceil(urgentes.length / PER_PAGE) || 1);
     } catch (err) {
       console.error("Erro ao carregar urgências:", err);
     } finally {
@@ -62,7 +64,13 @@ export default function ImportantComplaints() {
 
   useEffect(() => { 
     fetchUrgentes(); 
-  }, [page]);
+  }, []);
+
+  useEffect(() => {
+    setTotalPages(Math.ceil(lista.length / PER_PAGE) || 1);
+  }, [lista]);
+
+  const itensPagina = lista.slice((page - 1) * PER_PAGE, page * PER_PAGE);
 
   return (
     <div className="layout">
@@ -125,17 +133,17 @@ export default function ImportantComplaints() {
           <div className="complaints-grid">
             {loading ? (
               <div className="loader">Sincronizando reclamações...</div>
-            ) : lista.length === 0 ? (
+            ) : itensPagina.length === 0 ? (
               <div className="empty-state">
                 <ShieldAlert size={48} opacity={0.2} />
                 <p>Nenhuma reclamação crítica pendente no momento.</p>
               </div>
             ) : (
-              lista.map((item) => (
+              itensPagina.map((item) => (
                 <ImportantComplaint
                   key={item.id}
                   id={item.id}
-                  complaint_importance={item.importance || item.complaint_importance}
+                  complaint_importance={item.complaint_importance || item.importance}
                   complaint_title={item.complaint_title}
                   complaint_description={item.complaint_description}
                 />
