@@ -11,7 +11,6 @@
   --ease: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
-
 * { 
   margin: 0; 
   padding: 0; 
@@ -25,7 +24,6 @@ body {
   line-height: 1.5; 
   overflow-x: hidden;
 }
-
 
 .layout { 
   display: flex; 
@@ -49,7 +47,6 @@ body {
   background: var(--bg-deep); 
   overflow-y: auto;
 }
-
 
 .sidebar-header { 
   margin-bottom: 50px; 
@@ -83,14 +80,12 @@ body {
   text-align: left;
 }
 
-
 .nav-item:hover:not(.disabled-nav):not(.warning), 
 .nav-group button:hover {
   background: var(--accent); 
   color: white; 
   transform: translateX(8px);
 }
-
 
 .nav-item.warning:hover:not(.disabled-nav) {
   background: var(--danger);
@@ -109,6 +104,10 @@ body {
   cursor: not-allowed !important;
 }
 
+.lock-icon {
+  margin-left: auto;
+  color: var(--text-dim);
+}
 
 .main-header { 
   margin-bottom: 45px; 
@@ -171,7 +170,6 @@ body {
   font-size: 0.9rem;
 }
 
-
 .search-grid select {
   background: rgba(0, 0, 0, 0.2);
   border: 1px solid var(--border-ui);
@@ -187,7 +185,6 @@ body {
   opacity: 0.6;
   filter: grayscale(0.5);
 }
-
 
 .complaints-grid {
   display: grid;
@@ -226,7 +223,6 @@ body {
   font-weight: 600;
 }
 
-
 .action-btn {
   width: 100%;
   margin-top: 20px;
@@ -241,7 +237,6 @@ body {
 }
 
 .action-btn:hover { background: var(--accent); }
-
 
 .pagination-bar {
   display: flex;
@@ -264,7 +259,6 @@ body {
 .pag-btn:disabled { opacity: 0.3; cursor: not-allowed; }
 .pag-btn:not(:disabled):hover { background: var(--accent); }
 
-
 .login-overlay {
   grid-column: 1 / -1;
   display: flex;
@@ -282,7 +276,6 @@ body {
   border: 1px solid var(--border-ui);
 }
 
-
 .priority-indicator { font-weight: bold; font-size: 0.75rem; }
 .p-5 { color: var(--danger) !important; }
 .p-4 { color: #fb923c !important; }
@@ -294,4 +287,53 @@ body {
   grid-column: 1 / -1;
   text-align: center; 
   color: var(--text-dim); 
+}
+
+/* ─── AJUSTES DA FEATURE DE STATUS NO DASHBOARD ─── */
+.card-footer-status {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+  margin-top: auto; 
+  padding-top: 15px;
+  border-top: 1px solid var(--border-ui);
+}
+
+.action-btn-dash {
+  width: auto;
+  padding: 8px 16px;
+  border-radius: 10px;
+  border: none;
+  background: var(--glass);
+  color: white;
+  cursor: pointer;
+  transition: var(--ease);
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+
+.action-btn-dash:hover {
+  background: var(--accent);
+}
+
+.dash-status-pill {
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 6px 12px;
+  border-radius: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.dash-status-pill.resolvido {
+  background: rgba(16, 185, 129, 0.1);
+  color: #10b981;
+  border: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+.dash-status-pill.pendente {
+  background: rgba(245, 158, 11, 0.1);
+  color: #f59e0b;
+  border: 1px solid rgba(245, 158, 11, 0.2);
 }
