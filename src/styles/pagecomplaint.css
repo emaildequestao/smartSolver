@@ -3,7 +3,7 @@
     min-height: 100vh;
     width: 100%;
     background: #0f172a; 
-    padding: 40px 20px;
+    padding: 40px 20px; 
     display: flex;
     justify-content: center;
     color: #f8fafc;
@@ -13,13 +13,19 @@
 
 .pg-container {
     width: 100%;
-    max-width: 1200px;
+    max-width: 1200px; 
     display: flex;
     flex-direction: column;
     gap: 30px;
 }
 
-/* Header */
+.pg-loader {
+    align-self: center;
+    font-size: 1.2rem;
+    color: #94a3b8;
+}
+
+/* Header mais espaçado */
 .pg-header {
     display: flex;
     justify-content: space-between;
@@ -59,6 +65,29 @@
     font-weight: 600;
 }
 
+/* Erros */
+.pg-error-card {
+    background: rgba(30, 41, 59, 0.4);
+    border: 1px solid rgba(239, 68, 68, 0.2);
+    padding: 40px;
+    border-radius: 24px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+}
+
+.pg-error-card p { margin: 0; color: #94a3b8; }
+.pg-error-card button {
+    background: #3b82f6;
+    color: white;
+    border: none;
+    padding: 10px 24px;
+    border-radius: 10px;
+    cursor: pointer;
+}
+
 /* Conteúdo Principal */
 .pg-content {
     display: flex;
@@ -67,7 +96,6 @@
     width: 100%;
 }
 
-/* Card de Reclamação */
 .pg-card-wrapper {
     width: 100%;
     background: rgba(30, 41, 59, 0.4);
@@ -82,7 +110,7 @@
     backdrop-filter: blur(10px);
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 24px;
-    padding: 35px;
+    padding: 35px; 
     box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
 }
 
@@ -101,12 +129,18 @@
     letter-spacing: -0.02em;
 }
 
-/* Lista de Comentários */
+/* Lista de Comentários e Ajustes de Overflow para textos longos */
 .pg-comments-list {
     display: grid;
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr; 
     gap: 16px;
     margin-bottom: 30px;
+}
+
+.pg-empty-box {
+    color: #64748b;
+    text-align: center;
+    padding: 20px;
 }
 
 .pg-comment-card {
@@ -116,72 +150,54 @@
     border-radius: 18px;
     display: flex;
     justify-content: space-between;
-    align-items: flex-start; /* Alinhamento ao topo melhora leitura */
-    gap: 24px;
+    align-items: flex-start;
+    gap: 20px;
     transition: border-color 0.3s ease;
 }
 
 .pg-comment-card:hover {
-    border-color: rgba(59, 130, 246, 0.5);
+    border-color: #3b82f6;
 }
 
 .pg-comment-info {
     flex: 1;
+    min-width: 0; 
+    word-break: break-word; 
 }
 
 .pg-comment-info p {
-    margin: 0 0 12px 0;
+    margin: 0 0 8px 0;
     line-height: 1.6;
     color: #f1f5f9;
     font-size: 1rem;
-    word-break: break-word;
 }
 
 .pg-comment-info span {
     font-size: 0.75rem;
     color: #94a3b8;
-    background: rgba(255, 255, 255, 0.04);
-    border: 1px solid rgba(255, 255, 255, 0.05);
-    padding: 4px 10px;
-    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 2px 8px;
+    border-radius: 4px;
 }
 
-/* Ícone de Lixeira Premium e Integrado à Estética */
 .pg-delete-btn {
-    background: rgba(255, 255, 255, 0.02);
-    border: 1px solid rgba(255, 255, 255, 0.05);
-    color: #64748b;
-    width: 34px;
-    height: 34px;
-    border-radius: 10px;
+    background: transparent;
+    border: none;
+    color: #ef4444;
     cursor: pointer;
+    padding: 8px;
+    border-radius: 8px;
+    transition: all 0.2s ease;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-    align-self: flex-start; /* Mantém no topo junto do início do texto */
-    margin-top: 2px;
 }
 
 .pg-delete-btn:hover {
-    color: #ef4444;
     background: rgba(239, 68, 68, 0.1);
-    border-color: rgba(239, 68, 68, 0.2);
-    box-shadow: 0 0 15px rgba(239, 68, 68, 0.15);
-    transform: scale(1.05);
 }
 
-/* Estado Vazio */
-.pg-empty-box {
-    text-align: center;
-    padding: 40px;
-    color: #94a3b8;
-    background: rgba(15, 23, 42, 0.2);
-    border-radius: 14px;
-    border: 1px dashed rgba(255, 255, 255, 0.05);
-}
-
-/* Área de Entrada de Texto */
+/* Área de Input */
 .pg-input-wrapper {
     background: #0f172a;
     border: 2px solid rgba(255, 255, 255, 0.05);
@@ -205,7 +221,6 @@
     padding: 10px;
     font-size: 1rem;
     line-height: 1.5;
-    box-sizing: border-box;
 }
 
 .pg-input-actions {
@@ -217,9 +232,7 @@
     margin-top: 5px;
 }
 
-.pg-input-actions small {
-    color: #64748b;
-}
+.pg-input-actions small { color: #64748b; }
 
 .pg-send-btn {
     background: #3b82f6;
@@ -243,25 +256,62 @@
 
 .pg-send-btn:disabled {
     background: #1e293b;
-    color: #64748b;
+    color: #475569;
+    cursor: not-allowed;
+    box-shadow: none;
+}
+
+/* ─── ESTILOS NOVOS DO BOTÃO SWITCH E BADGES DE STATUS ─── */
+.pg-status-indicator {
+    padding: 8px 14px;
+    border-radius: 10px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-align: center;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.pg-status-indicator.resolvido {
+    background: rgba(16, 185, 129, 0.1);
+    color: #10b981;
+    border: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+.pg-status-indicator.pendente {
+    background: rgba(245, 158, 11, 0.1);
+    color: #f59e0b;
+    border: 1px solid rgba(245, 158, 11, 0.2);
+}
+
+.pg-switch-btn {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    color: #f8fafc;
+    padding: 10px 16px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.pg-switch-btn:hover:not(:disabled) {
+    background: #3b82f6;
+    border-color: #3b82f6;
+    color: white;
+}
+
+.pg-switch-btn:disabled {
+    background: rgba(255, 255, 255, 0.01);
+    color: #475569;
+    border-color: rgba(255, 255, 255, 0.02);
     cursor: not-allowed;
 }
 
 /* Mobile */
 @media (max-width: 768px) {
-    .pg-complaint-wrapper { 
-        padding: 15px 10px; 
-    }
-    .pg-comments-section { 
-        padding: 20px; 
-    }
-    .pg-header { 
-        flex-direction: column; 
-        gap: 12px; 
-        align-items: flex-start; 
-    }
-    .pg-back-btn, .pg-badge-status {
-        width: max-content;
-    }
+    .pg-complaint-wrapper { padding: 15px; }
+    .pg-comments-section { padding: 20px; }
+    .pg-header { flex-direction: column; gap: 15px; align-items: flex-start; }
 }
-
