@@ -17,17 +17,16 @@ type Row = {
   complaint_title: string; 
   complaint_description: string;
   complaint_creation_date: string; 
-  complaint_solution: string;
   complaint_category: string; 
   complaint_importance: number;
   complaint_origin: string; 
+  complaint_status: boolean; // Alterado para refletir o status (true = Resolvido, false = Pendente)
   comments?: Comment[];
 };
 
 export default function PageComplaint() {
   const navegacao = useNavigate();
   const { id: idParam } = useParams<{ id: string }>();
-  
   const [reclamacao, setReclamacao] = useState<Row | null>(null);
   const [loading, setLoading] = useState(true);
   const [comments, setComments] = useState<Comment[]>([]);
@@ -43,21 +42,25 @@ export default function PageComplaint() {
     if (!idParam) return;
 
     setLoading(true);
+    const controller = new AbortController();
 
+    // Executa as buscas da reclamação e dos comentários armazenados em paralelo
     Promise.all([
       fetch(`${API_URL}/complaint/${idParam}`, {
-        headers: { 'Authorization': `Bearer ${token}` }
+        headers: { 'Authorization': `Bearer ${token}` },
+        signal: controller.signal
       }).then(res => res.ok ? res.json() : Promise.reject('Erro ao buscar reclamação')),
 
       fetch(`${API_URL}/comments_get?complaint_id=${idParam}`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      }).then(res => res.ok ? res.json() : [])
+        headers: { 'Authorization': `Bearer ${token}` },
+        signal: controller.signal
+      }).then(res => res.ok ? res.json() : []) 
     ])
     .then(([dataComplaint, dataComments]) => {
       setReclamacao(dataComplaint);
       
-      const bancoComments: Comment[] = dataComments || [];
-      const embutidosComments: Comment[] = dataComplaint.comments || [];
+      const bancoComments = dataComments || [];
+      const embutidosComments = dataComplaint.comments || [];
       
       const todosComments = [...bancoComments, ...embutidosComments];
       const filtrados = todosComments.filter((c, index, self) =>
@@ -67,29 +70,64 @@ export default function PageComplaint() {
       setComments(filtrados);
     })
     .catch((err) => {
+      if (err.name === 'AbortError') return;
       console.error(err);
       setReclamacao(null);
     })
     .finally(() => {
-      setLoading(false);
+      if (!controller.signal.aborted) {
+        setLoading(false);
+      }
     });
+
+    return () => controller.abort();
   }, [idParam, navegacao]);
 
+  // Nova função para fazer o Switch de Status no Banco e na UI
+  const handleToggleStatus = async () => {
+    if (!reclamacao) return;
+    const token = localStorage.getItem('token_smartsolver');
+    if (!token) return alert("Sessão expirada. Faça login novamente.");
+
+    const novoStatus = !reclamacao.complaint_status;
+
+    const res = await fetch(`${API_URL}/complaint_status`, {
+      method: 'PATCH',
+      headers: { 
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json' 
+      },
+      body: JSON.stringify({ complaint_id: idParam, status: novoStatus })
+    });
+
+    if (res.ok) {
+      setReclamacao({
+        ...reclamacao,
+        complaint_status: novoStatus
+      });
+    } else {
+      throw new Error("Erro ao atualizar status.");
+    }
+  };
+
   const handleAddComment = async () => {
-    if (!newComment.trim() || !idParam) return;
+    if (!newComment.trim()) return;
+    const token = localStorage.getItem('token_smartsolver');
+    if (!token) return alert("Sessão expirada. Faça login novamente.");
+    
     setSubmitting(true);
     try {
       const res = await fetch(`${API_URL}/comments_post`, {
         method: 'POST',
         headers: { 
-          'Authorization': `Bearer ${localStorage.getItem('token_smartsolver')}`,
+          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json' 
         },
         body: JSON.stringify({ complaint_id: idParam, text: newComment })
       });
       if (res.ok) {
         const saved = await res.json();
-        setComments(prev => [...prev, saved]);
+        setComments([...comments, saved]);
         setNewComment('');
       } else {
         alert("Não foi possível salvar sua resposta técnica no servidor.");
@@ -104,17 +142,20 @@ export default function PageComplaint() {
 
   const handleDeleteComment = async (id: string) => {
     if (!confirm("Excluir esta resposta?")) return;
+    const token = localStorage.getItem('token_smartsolver');
+    if (!token) return alert("Sessão expirada.");
+
     try {
       const res = await fetch(`${API_URL}/comments_delete`, {
         method: 'DELETE',
         headers: { 
-          'Authorization': `Bearer ${localStorage.getItem('token_smartsolver')}`,
+          'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json' 
         },
         body: JSON.stringify({ comment_id: id })
       });
       if (res.ok) {
-        setComments(prev => prev.filter(c => c.id !== id));
+        setComments(comments.filter(c => c.id !== id));
       } else {
         alert("Não foi possível excluir a resposta do banco de dados.");
       }
@@ -124,13 +165,11 @@ export default function PageComplaint() {
     }
   };
 
-  if (loading) {
-    return (
-      <div className="pg-complaint-wrapper">
-        <div className="pg-loader">Carregando protocolo...</div>
-      </div>
-    );
-  }
+  if (loading) return (
+    <div className="pg-complaint-wrapper">
+      <div className="pg-loader">Carregando protocolo...</div>
+    </div>
+  );
 
   return (
     <div className="pg-complaint-wrapper">
@@ -157,11 +196,12 @@ export default function PageComplaint() {
               <Complaint
                 complaintTitle={reclamacao.complaint_title}
                 complaintText={reclamacao.complaint_description}
-                complaintsolution={reclamacao.complaint_solution}
+                complaintStatus={reclamacao.complaint_status}
                 complaintcategory={reclamacao.complaint_category}
                 complaintdate={reclamacao.complaint_creation_date}
                 complaintorigin={reclamacao.complaint_origin}
                 complaintimportance={reclamacao.complaint_importance}
+                onToggleStatus={handleToggleStatus}
               />
             </div>
 
@@ -178,15 +218,11 @@ export default function PageComplaint() {
                   comments.map(c => (
                     <div key={c.id} className="pg-comment-card">
                       <div className="pg-comment-info">
-                        <p>{c.text}</p> 
+                        <p>{c.text}</p>
                         <span>{new Date(c.created_at).toLocaleDateString('pt-BR')}</span>
                       </div>
-                      <button 
-                        className="pg-delete-btn" 
-                        onClick={() => handleDeleteComment(c.id)}
-                        aria-label="Excluir resposta técnica"
-                      >
-                        <Trash2 size={15} />
+                      <button className="pg-delete-btn" onClick={() => handleDeleteComment(c.id)}>
+                        <Trash2 size={16} />
                       </button>
                     </div>
                   ))
