@@ -20,7 +20,7 @@ type Row = {
   complaint_category: string; 
   complaint_importance: number;
   complaint_origin: string; 
-  complaint_status: boolean; // Alterado para refletir o status (true = Resolvido, false = Pendente)
+  complaint_status: boolean;
   comments?: Comment[];
 };
 
@@ -44,7 +44,6 @@ export default function PageComplaint() {
     setLoading(true);
     const controller = new AbortController();
 
-    // Executa as buscas da reclamação e dos comentários armazenados em paralelo
     Promise.all([
       fetch(`${API_URL}/complaint/${idParam}`, {
         headers: { 'Authorization': `Bearer ${token}` },
@@ -83,7 +82,6 @@ export default function PageComplaint() {
     return () => controller.abort();
   }, [idParam, navegacao]);
 
-  // Nova função para fazer o Switch de Status no Banco e na UI
   const handleToggleStatus = async () => {
     if (!reclamacao) return;
     const token = localStorage.getItem('token_smartsolver');
@@ -101,10 +99,11 @@ export default function PageComplaint() {
     });
 
     if (res.ok) {
-      setReclamacao({
-        ...reclamacao,
-        complaint_status: novoStatus
-      });
+      if (novoStatus) {
+        navegacao('/solved_complaints');
+      } else {
+        setReclamacao({ ...reclamacao, complaint_status: novoStatus });
+      }
     } else {
       throw new Error("Erro ao atualizar status.");
     }

@@ -7,4 +7,6 @@ export interface Complaint {
   complaint_solution: string;
   complaint_category: string;
   complaint_importance: number;
+  complaint_status: boolean;
+  complaint_origin: string;
 };

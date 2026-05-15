@@ -9,7 +9,6 @@ import {
   ChevronRight,
   LogOut
 } from 'lucide-react'; 
-import ImportantComplaint from '../components/ImportantComplaint';
 import '../styles/solved_complaints.css'; 
 
 const API_URL = import.meta.env.VITE_APP_API_URL || 'http://localhost:8000';
@@ -36,7 +35,7 @@ export default function SolvedComplaints() {
 
     setLoading(true);
     try {
-      const res = await fetch(`${API_URL}/latest?n=100`, {
+      const res = await fetch(`${API_URL}/solved`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -50,12 +49,7 @@ export default function SolvedComplaints() {
       }
 
       const data = await res.json();
-      
-      // FILTRO: Seleciona apenas as reclamações resolvidas (true)
-      const resolvidas = (data.items || []).filter((item: any) =>
-        item.complaint_status === true
-      );
-      
+      const resolvidas = data.items || [];
       setLista(resolvidas);
       setTotalPages(Math.ceil(resolvidas.length / PER_PAGE) || 1);
     } catch (err) {
@@ -147,13 +141,19 @@ export default function SolvedComplaints() {
               </div>
             ) : (
               itensPagina.map((item) => (
-                <ImportantComplaint
-                  key={item.id}
-                  id={item.id}
-                  complaint_importance={item.complaint_importance || item.importance}
-                  complaint_title={item.complaint_title}
-                  complaint_description={item.complaint_description}
-                />
+                <div key={item.id} className="glass-card">
+                  <div className="card-header">
+                    <span className="category-pill">{item.complaint_category || 'Resolvido'}</span>
+                    <span className={`priority-indicator p-${item.complaint_importance}`}>
+                      Lv. {item.complaint_importance}
+                    </span>
+                  </div>
+                  <h4>{item.complaint_title}</h4>
+                  <p>{item.complaint_description?.substring(0, 150)}...</p>
+                  <button className="action-btn" onClick={() => navegar(`/complaint/${item.id}`)}>
+                    Ver Detalhes
+                  </button>
+                </div>
               ))
             )}
           </div>
