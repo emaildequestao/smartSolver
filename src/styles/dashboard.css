@@ -4,6 +4,7 @@
   --accent: #6366f1;         
   --text-main: #f8fafc;
   --text-dim: #94a3b8;
+  --success: #10b981; /* Variável verde adicionada para controle global */
   --danger: #f43f5e;
   --glass: rgba(255, 255, 255, 0.03);
   --border-ui: rgba(255, 255, 255, 0.1);
@@ -80,15 +81,24 @@ body {
   text-align: left;
 }
 
-.nav-item:hover:not(.disabled-nav):not(.warning), 
+/* Hover Padrão Azul */
+.nav-item:hover:not(.disabled-nav):not(.warning):not(.success), 
 .nav-group button:hover {
   background: var(--accent); 
   color: white; 
   transform: translateX(8px);
 }
 
+/* Hover Vermelho (Urgentes) */
 .nav-item.warning:hover:not(.disabled-nav) {
   background: var(--danger);
+  color: white;
+  transform: translateX(8px);
+}
+
+/* NOVO: Hover Verde (Resolvidos) - Idêntico ao vermelho, mas com a cor de sucesso */
+.nav-item.success:hover:not(.disabled-nav) {
+  background: var(--success);
   color: white;
   transform: translateX(8px);
 }
@@ -289,7 +299,7 @@ body {
   color: var(--text-dim); 
 }
 
-/* ─── AJUSTES DA FEATURE DE STATUS NO DASHBOARD ─── */
+/* ─── INTEGRAÇÃO VISUAL DE STATUS PARA OS CARDS DO DASHBOARD ─── */
 .card-footer-status {
   display: flex;
   align-items: center;
@@ -328,7 +338,7 @@ body {
 
 .dash-status-pill.resolvido {
   background: rgba(16, 185, 129, 0.1);
-  color: #10b981;
+  color: var(--success);
   border: 1px solid rgba(16, 185, 129, 0.2);
 }
 
