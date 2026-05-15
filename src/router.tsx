@@ -5,6 +5,7 @@ import PageGraphics from './pages/PageGraphics'
 import ImportantComplaints from './pages/ImportantComplaints'
 import Login from './pages/Login'
 import CreateAccount from './pages/CreateAccount'
+import CreateAccount from './pages/Solved_Complaints'
 
 export default function AppRoutes() {
   return (
@@ -16,6 +17,7 @@ export default function AppRoutes() {
       <Route path="/complaint/:id" element={<PageComplaint/>} />
       <Route path="/graphics" element={<PageGraphics/>} />
       <Route path="/importantcomplaints" element={<ImportantComplaints/>} />
+      <Route path="/solved_complaints" element={<Solved_Complaints/>} />
     </Routes>
   )
 }
