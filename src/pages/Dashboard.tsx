@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { 
   BarChart3, 
   AlertCircle, 
+  CheckCircle, 
   Search, 
   LogOut, 
   LogIn, 
@@ -99,7 +100,7 @@ export default function Dashboard() {
       );
     }
     if (categoria) resultado = resultado.filter(item =>
-    item.complaint_category?.normalize('NFC') === categoria.normalize('NFC')
+      item.complaint_category?.normalize('NFC') === categoria.normalize('NFC')
     );
     if (importancia) resultado = resultado.filter(item => item.complaint_importance.toString() === importancia);
     
@@ -153,6 +154,16 @@ export default function Dashboard() {
               >
                 <AlertCircle size={18} />
                 <span>Urgentes</span>
+                {!isLoggedIn && <Lock size={12} className="lock-icon" />}
+              </button>
+
+              <button 
+                className={`nav-item ${!isLoggedIn ? 'disabled-nav' : ''}`}
+                onClick={() => isLoggedIn && navegar('/solved_complaints')}
+                style={{ color: isLoggedIn ? '#10b981' : 'var(--text-dim)' }}
+              >
+                <CheckCircle size={18} />
+                <span>Resolvidos</span>
                 {!isLoggedIn && <Lock size={12} className="lock-icon" />}
               </button>
             </div>
@@ -239,9 +250,15 @@ export default function Dashboard() {
                   </div>
                   <h4>{item.complaint_title}</h4>
                   <p>{item.complaint_description.substring(0, 100)}...</p>
-                  <button className="action-btn" onClick={() => navegar(`/complaint/${item.id}`)}>
-                    Analisar Detalhes
-                  </button>
+                  
+                  <div className="card-footer-status">
+                    <span className={`dash-status-pill ${item.complaint_status ? 'resolvido' : 'pendente'}`}>
+                      {item.complaint_status ? 'Resolvido' : 'Pendente'}
+                    </span>
+                    <button className="action-btn-dash" onClick={() => navegar(`/complaint/${item.id}`)}>
+                      Analisar Detalhes
+                    </button>
+                  </div>
                 </div>
               ))
             )}
