@@ -3,7 +3,6 @@ import '../styles/dashboard.css';
 
 const API_URL = import.meta.env.VITE_APP_API_URL || 'http://localhost:8000';
 
-// Auxiliares de Formatação
 function FormattedText({ text }: { text: string }) {
   const lines = text.split('\n');
   return (
@@ -18,12 +17,19 @@ function FormattedText({ text }: { text: string }) {
   );
 }
 
-function parseInline(text: string): React.ReactNode[] {
+// Corrigido o tipo de retorno para React.ReactNode de forma robusta
+function parseInline(text: string): React.ReactNode {
   const parts = text.split(/(\*\*.*?\*\*|\*.*?\*)/g);
-  return parts.map((part, i) => {
-    if (part.startsWith('**') && part.endsWith('**')) return <strong key={i} style={{ color: 'var(--accent)' }}>{part.slice(2, -2)}</strong>;
-    return part;
-  });
+  return (
+    <>
+      {parts.map((part, i) => {
+        if (part.startsWith('**') && part.endsWith('**')) {
+          return <strong key={i} style={{ color: 'var(--accent)' }}>{part.slice(2, -2)}</strong>;
+        }
+        return part;
+      })}
+    </>
+  );
 }
 
 function formatDate(dateStr: string): string {
@@ -39,23 +45,26 @@ function formatDate(dateStr: string): string {
 type ComplaintProps = {
   complaintTitle: string;
   complaintText: string;
-  complaintsolution: string;
+  complaintStatus: boolean; // Substituído de 'complaintsolution' para boolean
   complaintcategory: string;
   complaintdate: string;
   complaintorigin: string;
   complaintimportance: number;
+  onToggleStatus: () => Promise<void>; // Gatilho de mutação controlado pela página pai
 };
 
 export default function Complaint({
   complaintTitle,
   complaintText,
-  complaintsolution,
+  complaintStatus,
   complaintcategory,
   complaintdate,
   complaintorigin,
   complaintimportance,
+  onToggleStatus,
 }: ComplaintProps) {
   const [loading, setLoading] = useState(false);
+  const [statusLoading, setStatusLoading] = useState(false);
   const [solution, setSolution] = useState<string | null>(null);
 
   const handleGenerateSolution = async () => {
@@ -75,6 +84,17 @@ export default function Complaint({
     }
   };
 
+  const handleStatusChange = async () => {
+    setStatusLoading(true);
+    try {
+      await onToggleStatus();
+    } catch (e) {
+      alert("Não foi possível atualizar o status no servidor.");
+    } finally {
+      setStatusLoading(false);
+    }
+  };
+
   return (
     <div className="layout">
       <div className="main-container">
@@ -85,7 +105,6 @@ export default function Complaint({
 
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 320px', gap: '30px', alignItems: 'start' }}>
           
-          {/* Coluna Principal */}
           <div className="glass-card">
             <div className="card-header">
               <span className="category-pill">{complaintcategory}</span>
@@ -109,7 +128,6 @@ export default function Complaint({
             </button>
           </div>
 
-          {/* Lateral de Infos */}
           <aside style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
             <div className="glass-card">
               <h4 style={{ color: 'var(--text-dim)', fontSize: '0.7rem', textTransform: 'uppercase', marginBottom: '20px', letterSpacing: '1px' }}>Informações</h4>
@@ -124,9 +142,22 @@ export default function Complaint({
                 <p style={{ fontWeight: '500' }}>{complaintorigin || 'Não informada'}</p>
               </div>
 
-              <div>
-                <label style={{ display: 'block', fontSize: '0.7rem', color: 'var(--text-dim)', marginBottom: '5px' }}>SOLUÇÃO PRÉVIA</label>
-                <p style={{ fontSize: '0.9rem', color: 'var(--text-dim)' }}>{complaintsolution || 'Sem registro anterior'}</p>
+              {/* Seção de Status Refatorada com Botão Switch integrado */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                <label style={{ display: 'block', fontSize: '0.7rem', color: 'var(--text-dim)' }}>STATUS DO PROTOCOLO</label>
+                
+                <div className={`pg-status-indicator ${complaintStatus ? 'resolvido' : 'pendente'}`}>
+                  {complaintStatus ? 'Resolvido' : 'Pendente'}
+                </div>
+
+                <button 
+                  className="pg-switch-btn" 
+                  onClick={handleStatusChange}
+                  disabled={statusLoading}
+                  style={{ width: '100%', marginTop: '5px' }}
+                >
+                  {statusLoading ? 'Atualizando...' : `Mudar para ${complaintStatus ? 'Pendente' : 'Resolvido'}`}
+                </button>
               </div>
             </div>
           </aside>
