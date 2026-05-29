@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { 
   BarChart3, 
   AlertCircle, 
-  CheckCircle, // Ícone importado para a nova opção de resolvidos
+  CheckCircle, 
   Search, 
   LogOut, 
   LogIn, 
@@ -88,6 +88,10 @@ export default function Dashboard() {
     navegar('/login');
   };
 
+  const normalizarString = (str: string) => {
+    return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+  };
+
   const listaFiltrada = useMemo(() => {
     if (!isLoggedIn) return [];
     let resultado = [...listaOriginal];
@@ -99,18 +103,39 @@ export default function Dashboard() {
         item.complaint_description.toLowerCase().includes(termo)
       );
     }
-    if (categoria) resultado = resultado.filter(item =>
-      item.complaint_category?.normalize('NFC') === categoria.normalize('NFC')
-    );
-    if (importancia) resultado = resultado.filter(item => item.complaint_importance.toString() === importancia);
+    if (categoria) {
+      resultado = resultado.filter(item =>
+        normalizarString(item.complaint_category || '') === normalizarString(categoria)
+      );
+    }
+    if (importancia) {
+      resultado = resultado.filter(item => item.complaint_importance.toString() === importancia);
+    }
     
     return resultado;
   }, [busca, categoria, importancia, listaOriginal, isLoggedIn]);
 
-  useEffect(() => { setPage(1); }, [busca, categoria, importancia]);
+  useEffect(() => { 
+    setPage(1); 
+  }, [busca, categoria, importancia, listaOriginal]);
 
   const totalPages = Math.ceil(listaFiltrada.length / PER_PAGE) || 1;
   const itensExibidos = listaFiltrada.slice((page - 1) * PER_PAGE, page * PER_PAGE);
+
+  if (!isLoggedIn) {
+    return (
+      <div className="restricted-layout">
+        <div className="glass-card central-lock">
+          <Lock size={40} className="lock-main-icon" />
+          <h2>Área Restrita</h2>
+          <p>Por favor, realize o login corporativo para acessar os dados da SmartSolver.</p>
+          <button className="action-btn" onClick={() => navegar('/login')}>
+            Ir para Login
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="layout">
@@ -129,59 +154,37 @@ export default function Dashboard() {
               </button>
             </div>
 
-            {isLoggedIn && (
-              <div className="nav-group">
-                <label>Administração</label>
-                <LoadButton setLista={setListaOriginal} />
-                <LoadDataButton setLista={setListaOriginal} />
-              </div>
-            )}
+            <div className="nav-group">
+              <label>Administração</label>
+              <LoadButton setLista={setListaOriginal} />
+              <LoadDataButton setLista={setListaOriginal} />
+            </div>
 
             <div className="nav-group">
               <label>Análise</label>
-              <button 
-                className={`nav-item ${!isLoggedIn ? 'disabled-nav' : ''}`}
-                onClick={() => isLoggedIn && navegar('/graphics')}
-              >
+              <button className="nav-item" onClick={() => navegar('/graphics')}>
                 <BarChart3 size={18} />
                 <span>Gráficos Analíticos</span>
-                {!isLoggedIn && <Lock size={12} className="lock-icon" />}
               </button>
 
-              <button 
-                className={`nav-item warning ${!isLoggedIn ? 'disabled-nav' : ''}`}
-                onClick={() => isLoggedIn && navegar('/importantcomplaints')}
-              >
+              <button className="nav-item warning" onClick={() => navegar('/importantcomplaints')}>
                 <AlertCircle size={18} />
                 <span>Urgentes</span>
-                {!isLoggedIn && <Lock size={12} className="lock-icon" />}
               </button>
 
-              {/* INTEGRADO: Botão de Resolvidos com restrição de login e a classe "success" para o hover verde */}
-              <button 
-                className={`nav-item success ${!isLoggedIn ? 'disabled-nav' : ''}`}
-                onClick={() => isLoggedIn && navegar('/solved_complaints')}
-              >
+              <button className="nav-item success" onClick={() => navegar('/solved_complaints')}>
                 <CheckCircle size={18} />
                 <span>Resolvidos</span>
-                {!isLoggedIn && <Lock size={12} className="lock-icon" />}
               </button>
             </div>
           </nav>
         </div>
 
         <div className="sidebar-footer">
-          {isLoggedIn ? (
-            <button className="nav-item logout-btn" onClick={handleLogout}>
-              <LogOut size={18} />
-              <span>Encerrar Sessão</span>
-            </button>
-          ) : (
-            <button className="nav-item login-btn active-accent" onClick={() => navegar('/login')}>
-              <LogIn size={18} />
-              <span>Acesso Restrito</span>
-            </button>
-          )}
+          <button className="nav-item logout-btn" onClick={handleLogout}>
+            <LogOut size={18} />
+            <span>Encerrar Sessão</span>
+          </button>
         </div>
       </aside>
 
@@ -189,34 +192,31 @@ export default function Dashboard() {
         <header className="main-header">
           <div className="header-info">
             <h1>Dashboard</h1>
-            <p>{isLoggedIn ? 'Gestão de Reclamações Ativa' : 'Autenticação Necessária'}</p>
+            <p>Gestão de Reclamações Ativa</p>
           </div>
-          {isLoggedIn && (
-            <div className="user-badge admin">
-              <ShieldCheck size={14} />
-              Admin Corporativo
-            </div>
-          )}
+          <div className="user-badge admin">
+            <ShieldCheck size={14} />
+            Admin Corporativo
+          </div>
         </header>
 
         <main className="content-area">
-          <div className={`filter-card ${!isLoggedIn ? 'locked-ui' : ''}`}>
+          <div className="filter-card">
             <div className="search-grid">
               <div className="input-container">
                 <Search size={18} className="icon-search" />
                 <input 
                   type="text" 
-                  placeholder={isLoggedIn ? "Pesquisar reclamações..." : "Painel Bloqueado"} 
-                  disabled={!isLoggedIn}
+                  placeholder="Pesquisar reclamações..." 
                   value={busca}
                   onChange={(e) => setBusca(e.target.value)}
                 />
               </div>
-              <select disabled={!isLoggedIn} value={categoria} onChange={(e) => setCategoria(e.target.value)}>
+              <select value={categoria} onChange={(e) => setCategoria(e.target.value)}>
                 <option value="">Categorias</option>
                 {CATEGORIAS.map(cat => <option key={cat} value={cat}>{cat}</option>)}
               </select>
-              <select disabled={!isLoggedIn} value={importancia} onChange={(e) => setImportancia(e.target.value)}>
+              <select value={importancia} onChange={(e) => setImportancia(e.target.value)}>
                 <option value="">Prioridade</option>
                 {IMPORTANCIAS.map(num => <option key={num} value={num.toString()}>Nível {num}</option>)}
               </select>
@@ -224,18 +224,7 @@ export default function Dashboard() {
           </div>
 
           <div className="complaints-grid">
-            {!isLoggedIn ? (
-              <div className="login-overlay">
-                <div className="glass-card central-lock">
-                  <Lock size={40} />
-                  <h2>Área Restrita</h2>
-                  <p>Por favor, realize o login corporativo para acessar os dados da SmartSolver.</p>
-                  <button className="action-btn" onClick={() => navegar('/login')}>
-                    Ir para Login
-                  </button>
-                </div>
-              </div>
-            ) : loading ? (
+            {loading ? (
               <div className="loader">Sincronizando base de dados...</div>
             ) : itensExibidos.length === 0 ? (
               <div className="loader">Nenhuma reclamação encontrada.</div>
@@ -264,7 +253,7 @@ export default function Dashboard() {
             )}
           </div>
 
-          {isLoggedIn && listaFiltrada.length > PER_PAGE && (
+          {listaFiltrada.length > PER_PAGE && (
             <div className="pagination-bar">
               <button 
                 className="pag-btn" 
