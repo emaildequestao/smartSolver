@@ -10,7 +10,7 @@ import Solved_Complaints from './pages/Solved_Complaints'
 export default function AppRoutes() {
   return (
     <Routes>
-      <Route path="/" element={<Dashboard/>} />
+      <Route path="/" element={<Login/>} />
       <Route path="/dashboard" element={<Dashboard/>} />
       <Route path="/create_account" element={<CreateAccount/>} />
       <Route path="/login" element={<Login/>} />
